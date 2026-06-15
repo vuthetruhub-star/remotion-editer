@@ -1,0 +1,4 @@
+git clone https://github.com/vuthetruhub-star/remotion-editer.git ten-project-moi
+cd ten-project-moi
+pnpm install
+pnpm dev
