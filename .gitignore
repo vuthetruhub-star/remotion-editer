@@ -1,7 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# Root symlink (local convenience only — source is src/features/editor/motion-config.ts)
+# Root symlinks (local convenience only)
 /motion-config.ts
+/motion-scene.tsx
 
 # Screenshots / preview images
 *.png

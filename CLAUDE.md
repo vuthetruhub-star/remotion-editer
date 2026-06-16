@@ -18,14 +18,16 @@ pnpm install
 node src/scripts/test-zod-schema.mjs && node src/scripts/test-zod-reuse.mjs
 ```
 
-Tạo symlink `motion-config.ts` ở thư mục gốc (Windows PowerShell):
+Tạo 2 symlink ở thư mục gốc (Windows PowerShell):
 ```powershell
 New-Item -ItemType SymbolicLink -Path "motion-config.ts" -Target "src\features\editor\motion-config.ts"
+New-Item -ItemType SymbolicLink -Path "motion-scene.tsx" -Target "src\features\editor\player\items\motion-scene.tsx"
 ```
 
 Mac / Linux:
 ```bash
 ln -s src/features/editor/motion-config.ts motion-config.ts
+ln -s src/features/editor/player/items/motion-scene.tsx motion-scene.tsx
 ```
 
 Rồi khởi động:
