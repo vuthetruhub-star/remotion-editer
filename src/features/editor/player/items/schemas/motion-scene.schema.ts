@@ -21,14 +21,13 @@ export type OrderableKey = OrderableLayerKey;
 // ── Layers schema: every layer gets LayerSchema ───────────────
 type LayerSchemaShape = { [K in LayerKey]: z.ZodDefault<typeof LayerSchema> };
 const LayersSchema = z.object(
-  Object.fromEntries(LAYER_KEYS.map((k) => [k, LayerSchema.default({})]))
-  as LayerSchemaShape
+  (Object.fromEntries(LAYER_KEYS.map((k) => [k, LayerSchema.default({})])) as LayerSchemaShape)
 );
 
 // ── TextStyle schema: one per text layer, optional defaultColor ─
 type TextStyleSchemaShape = { [K in TextLayerKey]: z.ZodDefault<typeof LayerTextStyleSchema> };
 const TextStyleSchema = z.object(
-  Object.fromEntries(
+  (Object.fromEntries(
     TEXT_LAYER_KEYS.map((k) => {
       const cfg = LAYER_CONFIG[k];
       const dflt = (cfg.type === "text" && "defaultColor" in cfg && cfg.defaultColor)
@@ -36,7 +35,7 @@ const TextStyleSchema = z.object(
         : {};
       return [k, LayerTextStyleSchema.default(dflt)];
     })
-  ) as TextStyleSchemaShape
+  ) as TextStyleSchemaShape)
 );
 export type TextStyleConfig = z.infer<typeof TextStyleSchema>;
 export const DEFAULT_TEXT_STYLE: TextStyleConfig = TextStyleSchema.parse({});
