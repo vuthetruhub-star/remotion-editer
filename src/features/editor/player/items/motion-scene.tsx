@@ -1,323 +1,521 @@
 import { ITrackItem } from "@designcombo/types";
 import { BaseSequence, SequenceItemOptions } from "../base-sequence";
 import { useCurrentFrame, interpolate, Easing, AbsoluteFill, useVideoConfig } from "remotion";
-import { colors, fonts, radii, motion as M } from "../../../../brand";
+import { colors, fonts, radii, spacing, motion } from "../../../../brand";
 import {
   LayerConfig,
+  LayersConfig,
   LayerTextStyleConfig,
   parseMotionSceneMeta,
   zIdxOf,
 } from "./schemas/motion-scene.schema";
 
+// ─── TIMING MAP — 330f = 11s @ 30fps ────────────────────────────────────────
+const T = {
+  // Beat 1: Background + orb entry
+  orbEntry:       [0, 30]   as const,
+
+  // Beat 2: Line 1 — "Create AI songs with Suno"
+  line1In:        [30, 48]  as const,   // fade+slide 18f
+  line1Hold:      [48, 90]  as const,   // hold visible
+  line1Out:       [90, 105] as const,   // fade out 15f
+
+  // Beat 3: Orb pulse transition
+  orbShift:       [90, 110] as const,   // orb moves up
+
+  // Beat 4: Suno mockup + Line 2
+  mockupIn:       [110, 140] as const,  // slide up + fade 30f
+  line2In:        [120, 138] as const,  // fade+slide 18f
+  line2Hold:      [138, 180] as const,
+  mockupShrink:   [180, 200] as const,  // shrink + float up
+  line2Out:       [180, 195] as const,  // fade out 15f
+
+  // Beat 5: Stream counter + Line 3
+  counterIn:      [200, 220] as const,  // fade in
+  counterTick:    [220, 260] as const,  // tick 0→10000 over 40f
+  line3In:        [205, 223] as const,  // fade+slide 18f
+  line3Hold:      [223, 280] as const,
+  glowPeak:       [250, 280] as const,  // glow intensifies
+
+  // Beat 6: Hold — everything breathes
+  holdStart:      280,
+  holdEnd:        330,
+};
+
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 
-const layerVis = (l: LayerConfig, frame: number) =>
+const layerVis = (l: LayerConfig, frame: number): number =>
   frame >= l.fromFrame && frame < l.fromFrame + l.durationFrames ? 1 : 0;
 
-const easeOut = Easing.bezier(...M.easeOut);
-const easeInOut = Easing.bezier(...M.easeInOut);
-
-const ci = (frame: number, from: number, to: number, a: number, b: number, easing = easeOut) =>
-  interpolate(frame, [from, to], [a, b], {
+const clampInterp = (
+  frame: number,
+  input: readonly [number, number],
+  output: readonly [number, number],
+  easing?: (t: number) => number
+) =>
+  interpolate(frame, [...input], [...output], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
     easing,
   });
 
-// Parse "Hello [world|#f00] there" → [{text, color}]
-const parseSpans = (raw: string, defaultColor: string) => {
-  const regex = /\[([^\]|]+)\|([^\]]+)\]/g;
-  const parts: { text: string; color: string }[] = [];
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-  while ((match = regex.exec(raw)) !== null) {
-    if (match.index > lastIndex)
-      parts.push({ text: raw.slice(lastIndex, match.index), color: defaultColor });
-    parts.push({ text: match[1], color: match[2] });
-    lastIndex = regex.lastIndex;
-  }
-  if (lastIndex < raw.length)
-    parts.push({ text: raw.slice(lastIndex), color: defaultColor });
-  return parts.length > 0 ? parts : [{ text: raw, color: defaultColor }];
-};
+// ─── GREEN ORB — CSS fake glass sphere ───────────────────────────────────────
 
-// ─── TIMING ──────────────────────────────────────────────────────────────────
-const T = {
-  bgFade:      [0,  18] as const,
-  orbEntry:    [4,  26] as const,
-  sunoEntry:   [14, 36] as const,
-  counterEntry:[22, 44] as const,
-  line1Entry:  [34, 50] as const,
-  line2Entry:  [40, 56] as const,
-  line3Entry:  [48, 64] as const,
-};
-
-// ─── BACKGROUND ──────────────────────────────────────────────────────────────
-const SceneBackground: React.FC<{ frame: number; layer: LayerConfig }> = ({ frame, layer }) => {
+const GreenOrb: React.FC<{ layer: LayerConfig; zIndex: number }> = ({
+  layer,
+  zIndex,
+}) => {
+  const frame = useCurrentFrame();
   const vis = layerVis(layer, frame) * (layer.opacity / 100);
-  const fade = ci(frame, ...T.bgFade, 0, 1);
-  const breathe = 0.12 + 0.03 * Math.sin((frame / 60) * Math.PI);
+
+  // Entry: fade in + scale 0.8→1
+  const entryOpacity = clampInterp(frame, T.orbEntry, [0, 1]);
+  const entryScale = clampInterp(frame, T.orbEntry, [0.8, 1], Easing.out(Easing.cubic));
+
+  // Shift up when mockup appears
+  const shiftY = clampInterp(frame, T.orbShift, [0, -120], Easing.out(Easing.cubic));
+
+  // Breathing pulse (always on after entry)
+  const postEntry = Math.max(0, frame - T.orbEntry[1]);
+  const breathe = 1 + 0.025 * Math.sin((postEntry / motion.pulse) * Math.PI * 2);
+
+  // Glow intensity ramp during counter reveal
+  const glowBoost = clampInterp(frame, T.glowPeak, [0, 0.15]);
+
+  // Base glow opacity
+  const baseGlow = 0.18 + 0.06 * Math.sin((postEntry / 50) * Math.PI);
+
   return (
-    <AbsoluteFill
+    <div
       style={{
-        background: colors.background,
-        opacity: fade * vis,
+        position: "absolute",
+        top: "50%",
+        left: "50%",
+        width: 220,
+        height: 220,
+        zIndex,
+        opacity: entryOpacity * vis,
+        transform: `translate(-50%, calc(-50% + ${shiftY + layer.y}px)) scale(${entryScale * breathe * layer.scale}) rotate(${layer.rotate}deg)`,
         filter: `blur(${layer.blur}px) brightness(${layer.brightness}%)`,
-        zIndex: 0,
+        pointerEvents: "none",
       }}
     >
-      {/* ambient glow */}
-      <div style={{
-        position: "absolute",
-        inset: 0,
-        background: `radial-gradient(ellipse 60% 45% at 50% 55%, rgba(0,185,55,${breathe}) 0%, transparent 70%)`,
-      }} />
-    </AbsoluteFill>
-  );
-};
-
-// ─── GREEN ORB ───────────────────────────────────────────────────────────────
-const GreenOrb: React.FC<{ frame: number; layer: LayerConfig; zIndex: number }> = ({ frame, layer, zIndex }) => {
-  const vis = layerVis(layer, frame) * (layer.opacity / 100);
-  const scale = ci(frame, ...T.orbEntry, 0, 1, easeOut);
-  const opacity = ci(frame, T.orbEntry[0], T.orbEntry[0] + 10, 0, 1);
-  const floatY = 5 * Math.sin((frame / 50) * Math.PI);
-  const pulse = 0.85 + 0.15 * Math.sin((frame / 38) * Math.PI);
-
-  return (
-    <div style={{
-      position: "absolute",
-      top: "50%",
-      left: "50%",
-      zIndex,
-      opacity: opacity * vis,
-      transform: `translate(calc(-50% + ${layer.x}px), calc(-50% + ${floatY + layer.y - 60}px)) scale(${scale * layer.scale}) rotate(${layer.rotate}deg)`,
-      filter: `blur(${layer.blur}px) brightness(${layer.brightness}%)`,
-    }}>
-      {/* outer glow ring */}
-      <div style={{
-        position: "absolute",
-        inset: -24,
-        borderRadius: radii.full,
-        background: `radial-gradient(circle, rgba(0,255,65,${0.18 * pulse}) 0%, transparent 70%)`,
-      }} />
-      {/* orb body */}
-      <div style={{
-        width: 72,
-        height: 72,
-        borderRadius: radii.full,
-        background: `radial-gradient(circle at 38% 35%, rgba(0,255,100,0.95) 0%, rgba(0,200,60,0.85) 45%, rgba(0,120,35,0.7) 100%)`,
-        boxShadow: `0 0 32px rgba(0,255,65,0.55), 0 0 64px rgba(0,255,65,0.22), inset 0 2px 4px rgba(255,255,255,0.25)`,
-        transform: `scale(${pulse})`,
-      }} />
+      {/* Outer glow */}
+      <div
+        style={{
+          position: "absolute",
+          inset: -40,
+          borderRadius: radii.full,
+          background: `radial-gradient(circle, rgba(0,255,65,${baseGlow + glowBoost}) 0%, rgba(0,255,65,0.04) 50%, transparent 70%)`,
+        }}
+      />
+      {/* Main sphere */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          borderRadius: radii.full,
+          background: `radial-gradient(ellipse 60% 55% at 40% 35%, rgba(0,255,65,0.35) 0%, rgba(0,255,65,0.12) 40%, rgba(0,80,20,0.25) 70%, rgba(0,40,10,0.4) 100%)`,
+          boxShadow: `0 0 60px rgba(0,255,65,${0.12 + glowBoost}), inset 0 -20px 40px rgba(0,0,0,0.3), inset 0 4px 16px rgba(255,255,255,0.08)`,
+        }}
+      />
+      {/* Highlight spot */}
+      <div
+        style={{
+          position: "absolute",
+          top: "22%",
+          left: "30%",
+          width: "28%",
+          height: "18%",
+          borderRadius: radii.full,
+          background: "radial-gradient(ellipse, rgba(255,255,255,0.25) 0%, transparent 70%)",
+        }}
+      />
     </div>
   );
 };
 
-// ─── SUNO MOCKUP ─────────────────────────────────────────────────────────────
-const SunoMockup: React.FC<{ frame: number; layer: LayerConfig; zIndex: number }> = ({ frame, layer, zIndex }) => {
-  const vis = layerVis(layer, frame) * (layer.opacity / 100);
-  const slideY = ci(frame, ...T.sunoEntry, 28, 0, easeOut);
-  const opacity = ci(frame, T.sunoEntry[0], T.sunoEntry[0] + 12, 0, 1);
+// ─── SUNO MOCKUP — App UI card ───────────────────────────────────────────────
 
-  const bars = [0.4, 0.75, 0.55, 0.9, 0.65, 0.8, 0.5, 0.7, 0.85, 0.6];
-  const barAnim = bars.map((h, i) =>
-    h * (0.7 + 0.3 * Math.sin(((frame - i * 4) / 28) * Math.PI))
-  );
+const SunoMockup: React.FC<{ layer: LayerConfig; zIndex: number }> = ({
+  layer,
+  zIndex,
+}) => {
+  const frame = useCurrentFrame();
+  const vis = layerVis(layer, frame) * (layer.opacity / 100);
+
+  // Slide in from below + fade
+  const entryOpacity = clampInterp(frame, T.mockupIn, [0, 1]);
+  const entryY = clampInterp(frame, T.mockupIn, [80, 0], Easing.out(Easing.cubic));
+  const entryScale = clampInterp(frame, T.mockupIn, [0.9, 1], Easing.out(Easing.cubic));
+
+  // Shrink + float up after hold
+  const shrinkScale = clampInterp(frame, T.mockupShrink, [1, 0.45], Easing.out(Easing.cubic));
+  const shrinkY = clampInterp(frame, T.mockupShrink, [0, -280], Easing.out(Easing.cubic));
+  const shrinkOpacity = clampInterp(frame, T.mockupShrink, [1, 0.6]);
+
+  const isShrinking = frame >= T.mockupShrink[0];
+  const currentScale = isShrinking ? shrinkScale : entryScale;
+  const currentY = isShrinking ? shrinkY : entryY;
+  const currentOpacity = isShrinking ? shrinkOpacity : entryOpacity;
+
+  // Breathing pulse after entry
+  const postEntry = Math.max(0, frame - T.mockupIn[1]);
+  const breathe = 1 + 0.01 * Math.sin((postEntry / 48) * Math.PI);
 
   return (
-    <div style={{
-      position: "absolute",
-      top: "50%",
-      left: "50%",
-      zIndex,
-      opacity: opacity * vis,
-      transform: `translate(calc(-50% + ${layer.x}px), calc(-50% + ${slideY + layer.y + 30}px)) scale(${layer.scale}) rotate(${layer.rotate}deg)`,
-      filter: `blur(${layer.blur}px) brightness(${layer.brightness}%)`,
-    }}>
-      {/* phone frame */}
-      <div style={{
-        width: 130,
-        height: 86,
-        borderRadius: radii.xl,
-        background: colors.surface,
-        border: `1px solid ${colors.border}`,
-        boxShadow: `0 16px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,255,65,0.08)`,
-        padding: 10,
-        display: "flex",
-        flexDirection: "column",
-        gap: 6,
-        overflow: "hidden",
-      }}>
-        {/* top row */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-            <div style={{ width: 14, height: 14, borderRadius: radii.sm, background: colors.primary, opacity: 0.9 }} />
-            <div style={{ fontFamily: fonts.mono, fontSize: 8, color: colors.text.primary, fontWeight: fonts.weights.semibold, letterSpacing: "0.04em" }}>SUNO</div>
+    <div
+      style={{
+        position: "absolute",
+        top: "48%",
+        left: "50%",
+        width: 240,
+        zIndex,
+        opacity: currentOpacity * vis,
+        transform: `translate(-50%, calc(-50% + ${currentY + layer.y}px)) scale(${currentScale * breathe * layer.scale}) rotate(${layer.rotate}deg)`,
+        filter: `blur(${layer.blur}px) brightness(${layer.brightness}%)`,
+        pointerEvents: "none",
+      }}
+    >
+      {/* Card container */}
+      <div
+        style={{
+          background: colors.surface,
+          border: `1px solid ${colors.border}`,
+          borderTop: `1px solid rgba(255,255,255,0.06)`,
+          borderRadius: radii.xl,
+          padding: spacing.md,
+          display: "flex",
+          flexDirection: "column",
+          gap: spacing.sm,
+          boxShadow: `0 20px 60px rgba(0,0,0,0.5), 0 0 30px rgba(0,255,65,0.06)`,
+        }}
+      >
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", gap: spacing.sm }}>
+          {/* Suno icon placeholder */}
+          <div
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: radii.lg,
+              background: `linear-gradient(135deg, rgba(0,255,65,0.3), rgba(0,180,45,0.5))`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <span style={{ fontSize: 18 }}>🎵</span>
           </div>
-          <div style={{ fontFamily: fonts.mono, fontSize: 7, color: colors.text.muted }}>AI</div>
+          <div>
+            <div
+              style={{
+                fontFamily: fonts.heading,
+                fontSize: fonts.sizes.sm,
+                fontWeight: fonts.weights.semibold,
+                color: colors.text.primary,
+              }}
+            >
+              Suno AI
+            </div>
+            <div
+              style={{
+                fontFamily: fonts.mono,
+                fontSize: fonts.sizes.xs,
+                color: colors.text.muted,
+              }}
+            >
+              AI Music Generator
+            </div>
+          </div>
         </div>
-        {/* waveform */}
-        <div style={{ display: "flex", alignItems: "flex-end", gap: 2, height: 28, paddingLeft: 2 }}>
-          {barAnim.map((h, i) => (
-            <div key={i} style={{
-              width: 6,
-              height: `${h * 100}%`,
-              borderRadius: 2,
-              background: i % 3 === 0
-                ? colors.primary
-                : i % 3 === 1
-                ? `rgba(0,255,65,0.5)`
-                : `rgba(0,255,65,0.25)`,
-            }} />
+
+        {/* Song preview bars */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          {[0.85, 0.65, 0.75, 0.5, 0.9].map((w, i) => (
+            <div
+              key={i}
+              style={{
+                height: 4,
+                borderRadius: 2,
+                background: colors.borderSubtle,
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  width: `${w * 100}%`,
+                  height: "100%",
+                  borderRadius: 2,
+                  background: `linear-gradient(90deg, ${colors.primary}, rgba(0,255,65,0.4))`,
+                  opacity: 0.6,
+                }}
+              />
+            </div>
           ))}
         </div>
-        {/* song label */}
-        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-          <div style={{ width: 4, height: 4, borderRadius: radii.full, background: colors.primary }} />
-          <div style={{ fontFamily: fonts.mono, fontSize: 7, color: colors.text.secondary, letterSpacing: "0.06em" }}>generating...</div>
+
+        {/* Generate button */}
+        <div
+          style={{
+            background: colors.primary,
+            borderRadius: radii.sm,
+            padding: `${spacing.xs}px ${spacing.md}px`,
+            textAlign: "center",
+          }}
+        >
+          <span
+            style={{
+              fontFamily: fonts.mono,
+              fontSize: fonts.sizes.xs,
+              fontWeight: fonts.weights.medium,
+              color: colors.background,
+              letterSpacing: "0.04em",
+            }}
+          >
+            ▶ GENERATE
+          </span>
         </div>
       </div>
     </div>
   );
 };
 
-// ─── STREAM COUNTER ───────────────────────────────────────────────────────────
-const StreamCounter: React.FC<{ frame: number; layer: LayerConfig; zIndex: number }> = ({ frame, layer, zIndex }) => {
-  const vis = layerVis(layer, frame) * (layer.opacity / 100);
-  const slideX = ci(frame, ...T.counterEntry, 20, 0, easeOut);
-  const opacity = ci(frame, T.counterEntry[0], T.counterEntry[0] + 12, 0, 1);
+// ─── STREAM COUNTER — Number ticker ──────────────────────────────────────────
 
-  // Counting up animation
-  const countProgress = ci(frame, T.counterEntry[0], T.counterEntry[0] + 40, 0, 1, easeInOut);
-  const streams = Math.floor(countProgress * 1247893);
-  const formatted = streams.toLocaleString("en-US");
+const StreamCounter: React.FC<{ layer: LayerConfig; zIndex: number }> = ({
+  layer,
+  zIndex,
+}) => {
+  const frame = useCurrentFrame();
+  const vis = layerVis(layer, frame) * (layer.opacity / 100);
+
+  // Fade in
+  const entryOpacity = clampInterp(frame, T.counterIn, [0, 1]);
+  const entryScale = clampInterp(frame, T.counterIn, [0.95, 1], Easing.out(Easing.cubic));
+
+  // Number tick
+  const tickValue = clampInterp(frame, T.counterTick, [0, 10000], Easing.out(Easing.cubic));
+  const isTicking = frame >= T.counterTick[0] && frame < T.counterTick[1];
+
+  // Breathing
+  const postEntry = Math.max(0, frame - T.counterIn[1]);
+  const breathe = 1 + 0.012 * Math.sin((postEntry / 48) * Math.PI);
 
   return (
-    <div style={{
-      position: "absolute",
-      bottom: "50%",
-      right: "50%",
-      zIndex,
-      opacity: opacity * vis,
-      transform: `translate(calc(50% + ${slideX + layer.x + 80}px), calc(50% + ${layer.y + 20}px)) scale(${layer.scale}) rotate(${layer.rotate}deg)`,
-      filter: `blur(${layer.blur}px) brightness(${layer.brightness}%)`,
-    }}>
-      <div style={{
-        padding: "8px 12px",
-        borderRadius: radii.lg,
-        background: colors.surfaceAlt,
-        border: `1px solid ${colors.border}`,
-        boxShadow: `0 4px 16px rgba(0,0,0,0.4), 0 0 0 1px rgba(0,255,65,0.06)`,
+    <div
+      style={{
+        position: "absolute",
+        top: "58%",
+        left: "50%",
+        zIndex,
+        opacity: entryOpacity * vis,
+        transform: `translate(-50%, -50%) scale(${entryScale * breathe * layer.scale}) rotate(${layer.rotate}deg)`,
+        filter: `blur(${layer.blur}px) brightness(${layer.brightness}%)`,
+        pointerEvents: "none",
         display: "flex",
         flexDirection: "column",
-        alignItems: "flex-end",
-        gap: 2,
-      }}>
-        <div style={{ fontFamily: fonts.mono, fontSize: 7, color: colors.text.muted, letterSpacing: "0.08em", textTransform: "uppercase" }}>Monthly Streams</div>
-        <div style={{ fontFamily: fonts.mono, fontSize: 16, fontWeight: fonts.weights.bold, color: colors.primary, letterSpacing: "-0.02em", lineHeight: 1 }}>
-          {formatted}
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
-          <div style={{ width: 4, height: 4, borderRadius: radii.full, background: colors.primary, boxShadow: `0 0 6px ${colors.primary}` }} />
-          <div style={{ fontFamily: fonts.mono, fontSize: 6, color: "rgba(0,255,65,0.6)", letterSpacing: "0.06em" }}>LIVE</div>
-        </div>
+        alignItems: "center",
+        gap: spacing.xs,
+      }}
+    >
+      {/* Counter value */}
+      <div
+        style={{
+          fontFamily: fonts.mono,
+          fontSize: 56,
+          fontWeight: fonts.weights.bold,
+          color: isTicking ? colors.primary : colors.text.primary,
+          textShadow: isTicking
+            ? `0 0 20px ${colors.glowSoft}, 0 0 40px rgba(0,255,65,0.15)`
+            : "none",
+          fontVariantNumeric: "tabular-nums",
+          lineHeight: 1,
+        }}
+      >
+        {Math.round(tickValue).toLocaleString()}
+      </div>
+
+      {/* Label */}
+      <div
+        style={{
+          fontFamily: fonts.mono,
+          fontSize: fonts.sizes.xs,
+          fontWeight: fonts.weights.regular,
+          color: colors.text.muted,
+          letterSpacing: "0.08em",
+        }}
+      >
+        ▶ STREAMS
       </div>
     </div>
   );
 };
 
-// ─── TEXT LINE ───────────────────────────────────────────────────────────────
-const TextLine: React.FC<{
+// ─── SCENE TEXT — fade+slide in/out ──────────────────────────────────────────
+
+const SceneText: React.FC<{
   text: string;
   layer: LayerConfig;
   zIndex: number;
   ts: LayerTextStyleConfig;
   entryRange: readonly [number, number];
-  baseTop: number;
-}> = ({ text, layer, zIndex, ts, entryRange, baseTop }) => {
+  exitRange: readonly [number, number] | null;
+  yPosition: string;
+}> = ({ text, layer, zIndex, ts, entryRange, exitRange, yPosition }) => {
   const frame = useCurrentFrame();
   const vis = layerVis(layer, frame) * (layer.opacity / 100);
-  const opacity = ci(frame, entryRange[0], entryRange[1], 0, 1);
-  const slideY = ci(frame, entryRange[0], entryRange[1], 12, 0, easeOut);
-  const blur = ci(frame, entryRange[0], entryRange[0] + 12, 6, 0);
+
+  // Entry: fade + slide up
+  const entryOpacity = clampInterp(frame, entryRange, [0, 1]);
+  const entryY = clampInterp(frame, entryRange, [24, 0], Easing.out(Easing.cubic));
+
+  // Exit: fade out
+  const exitOpacity = exitRange
+    ? clampInterp(frame, exitRange, [1, 0])
+    : 1;
+
   const hasMaxWidth = ts.maxWidth > 0;
-  const spans = parseSpans(text, ts.color);
 
   return (
-    <div style={{
-      position: "absolute",
-      top: baseTop + layer.y,
-      left: "50%",
-      zIndex,
-      opacity: opacity * vis,
-      filter: `blur(${blur + layer.blur}px) brightness(${layer.brightness}%)`,
-      transform: `translateX(calc(-50% + ${layer.x}px)) translateY(${slideY}px) scale(${layer.scale}) rotate(${layer.rotate}deg)`,
-      textAlign: ts.textAlign,
-      whiteSpace: hasMaxWidth ? "normal" : "nowrap",
-      maxWidth: hasMaxWidth ? ts.maxWidth : undefined,
-      wordBreak: hasMaxWidth ? "break-word" : undefined,
-      pointerEvents: "none",
-    }}>
-      <div style={{
-        fontFamily: fonts.mono,
-        fontSize: 13,
-        fontWeight: ts.bold ? fonts.weights.bold : fonts.weights.medium,
-        letterSpacing: "0.04em",
-        lineHeight: 1.3,
-        textDecoration: ts.underline ? "underline" : "none",
-        textTransform: ts.textTransform as React.CSSProperties["textTransform"],
-        WebkitTextStroke: ts.strokeWidth > 0 ? `${ts.strokeWidth}px ${ts.strokeColor}` : undefined,
-      }}>
-        {spans.map((s, i) => <span key={i} style={{ color: s.color }}>{s.text}</span>)}
+    <div
+      style={{
+        position: "absolute",
+        top: yPosition,
+        left: "50%",
+        zIndex,
+        opacity: entryOpacity * exitOpacity * vis,
+        transform: `translateX(calc(-50% + ${layer.x}px)) translateY(${entryY + layer.y}px) scale(${layer.scale}) rotate(${layer.rotate}deg)`,
+        textAlign: ts.textAlign,
+        whiteSpace: hasMaxWidth ? "normal" : "nowrap",
+        maxWidth: hasMaxWidth ? ts.maxWidth : 900,
+        wordBreak: hasMaxWidth ? "break-word" : undefined,
+        filter: `blur(${layer.blur}px) brightness(${layer.brightness}%)`,
+        pointerEvents: "none",
+      }}
+    >
+      <div
+        style={{
+          fontFamily: fonts.heading,
+          fontSize: 38,
+          fontWeight: ts.bold ? fonts.weights.heavy : fonts.weights.bold,
+          color: ts.color,
+          lineHeight: 1.25,
+          letterSpacing: "-0.02em",
+          textDecoration: ts.underline ? "underline" : "none",
+          textTransform: ts.textTransform as React.CSSProperties["textTransform"],
+          WebkitTextStroke:
+            ts.strokeWidth > 0
+              ? `${ts.strokeWidth}px ${ts.strokeColor}`
+              : undefined,
+        }}
+      >
+        {text}
       </div>
     </div>
   );
 };
 
-// ─── ROOT SCENE ───────────────────────────────────────────────────────────────
+// ─── BACKGROUND GLOW ─────────────────────────────────────────────────────────
+
+const BackgroundGlow: React.FC<{ layer: LayerConfig }> = ({ layer }) => {
+  const frame = useCurrentFrame();
+  const vis = layerVis(layer, frame) * (layer.opacity / 100);
+
+  // Slow breathing
+  const breathe = 0.12 + 0.05 * Math.sin((frame / 70) * Math.PI);
+
+  // Glow peak during counter
+  const glowBoost = clampInterp(frame, T.glowPeak, [0, 0.08]);
+
+  return (
+    <AbsoluteFill
+      style={{
+        background: `radial-gradient(ellipse 70% 50% at 50% 45%, rgba(0,255,65,${breathe + glowBoost}) 0%, rgba(0,60,15,0.06) 50%, transparent 75%)`,
+        opacity: vis,
+        zIndex: 0,
+      }}
+    />
+  );
+};
+
+// ─── ROOT SCENE ──────────────────────────────────────────────────────────────
+
 const RootScene: React.FC<{
   line1: string;
   line2: string;
   line3: string;
-  layers: Record<string, LayerConfig>;
+  layers: LayersConfig;
   zOrder: string[];
-  textStyle: Record<string, LayerTextStyleConfig>;
+  textStyle: {
+    line1: LayerTextStyleConfig;
+    line2: LayerTextStyleConfig;
+    line3: LayerTextStyleConfig;
+  };
 }> = ({ line1, line2, line3, layers, zOrder, textStyle }) => {
   const frame = useCurrentFrame();
-  const { width, height } = useVideoConfig();
-
-  const bg   = layers.background    ?? { x:0, y:0, scale:1, rotate:0, opacity:100, fromFrame:0, durationFrames:330, blur:0, brightness:100 };
-  const orb  = layers.greenOrb      ?? { ...bg };
-  const suno = layers.sunoMockup    ?? { ...bg };
-  const ctr  = layers.streamCounter ?? { ...bg };
-  const l1   = layers.line1         ?? { ...bg };
-  const l2   = layers.line2         ?? { ...bg };
-  const l3   = layers.line3         ?? { ...bg };
-
-  const ts1 = textStyle.line1 ?? { bold: false, underline: false, textTransform: "none", color: colors.text.primary, textAlign: "center", strokeWidth: 0, strokeColor: "#000", maxWidth: 0 };
-  const ts2 = textStyle.line2 ?? ts1;
-  const ts3 = textStyle.line3 ?? ts1;
-
-  const centerY = height / 2;
-  const centerX = width / 2;
 
   return (
     <AbsoluteFill style={{ background: colors.background }}>
-      <SceneBackground frame={frame} layer={bg} />
+      {/* Background glow — always on */}
+      <BackgroundGlow layer={layers.background} />
 
-      <GreenOrb       frame={frame} layer={orb}  zIndex={zIdxOf("greenOrb",      zOrder)} />
-      <SunoMockup     frame={frame} layer={suno} zIndex={zIdxOf("sunoMockup",     zOrder)} />
-      <StreamCounter  frame={frame} layer={ctr}  zIndex={zIdxOf("streamCounter",  zOrder)} />
+      {/* Green orb — center, shifts up */}
+      <GreenOrb
+        layer={layers.greenOrb}
+        zIndex={zIdxOf("greenOrb", zOrder)}
+      />
 
-      <TextLine text={line1} layer={l1} zIndex={zIdxOf("line1", zOrder)} ts={ts1} entryRange={T.line1Entry} baseTop={centerY - 30} />
-      <TextLine text={line2} layer={l2} zIndex={zIdxOf("line2", zOrder)} ts={ts2} entryRange={T.line2Entry} baseTop={centerY - 12} />
-      <TextLine text={line3} layer={l3} zIndex={zIdxOf("line3", zOrder)} ts={ts3} entryRange={T.line3Entry} baseTop={centerY + 8} />
+      {/* Line 1: "Create AI songs with Suno" — beat 2 */}
+      <SceneText
+        text={line1}
+        layer={layers.line1}
+        zIndex={zIdxOf("line1", zOrder)}
+        ts={textStyle.line1}
+        entryRange={T.line1In}
+        exitRange={T.line1Out}
+        yPosition="62%"
+      />
+
+      {/* Suno mockup — beat 4 */}
+      <SunoMockup
+        layer={layers.sunoMockup}
+        zIndex={zIdxOf("sunoMockup", zOrder)}
+      />
+
+      {/* Line 2: "Register as artist on Spotify" — beat 4 */}
+      <SceneText
+        text={line2}
+        layer={layers.line2}
+        zIndex={zIdxOf("line2", zOrder)}
+        ts={textStyle.line2}
+        entryRange={T.line2In}
+        exitRange={T.line2Out}
+        yPosition="28%"
+      />
+
+      {/* Stream counter — beat 5 */}
+      <StreamCounter
+        layer={layers.streamCounter}
+        zIndex={zIdxOf("streamCounter", zOrder)}
+      />
+
+      {/* Line 3: "Get streams. Get paid." — beat 5 */}
+      <SceneText
+        text={line3}
+        layer={layers.line3}
+        zIndex={zIdxOf("line3", zOrder)}
+        ts={textStyle.line3}
+        entryRange={T.line3In}
+        exitRange={null}
+        yPosition="72%"
+      />
     </AbsoluteFill>
   );
 };
 
-// ─── EXPORT ──────────────────────────────────────────────────────────────────
+// ─── SEQUENCE ITEM EXPORT ────────────────────────────────────────────────────
+
 export default function MotionScene({
   item,
   options,
@@ -325,13 +523,8 @@ export default function MotionScene({
   item: ITrackItem;
   options: SequenceItemOptions;
 }) {
-  const meta = parseMotionSceneMeta(item.metadata);
-  const { layers, zOrder, textStyle } = meta;
-
-  const line1 = (meta as unknown as Record<string, string>).line1 ?? "";
-  const line2 = (meta as unknown as Record<string, string>).line2 ?? "";
-  const line3 = (meta as unknown as Record<string, string>).line3 ?? "";
-
+  const { line1, line2, line3, layers, zOrder, textStyle } =
+    parseMotionSceneMeta(item.metadata);
   return BaseSequence({
     item,
     options,
@@ -340,9 +533,9 @@ export default function MotionScene({
         line1={line1}
         line2={line2}
         line3={line3}
-        layers={layers as unknown as Record<string, LayerConfig>}
+        layers={layers}
         zOrder={zOrder}
-        textStyle={textStyle as unknown as Record<string, LayerTextStyleConfig>}
+        textStyle={textStyle as any}
       />
     ),
   });
