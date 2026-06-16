@@ -1,5 +1,7 @@
 // RENAME: Replace ids and type keys with your project name.
 // Type key "motionScene" must match the key in sequence-item.tsx, timeline.tsx, and control-item.tsx.
+import { TEXT_DEFAULTS } from "./motion-config";
+
 export const design = {
   id: "motion-scene-default",
   fps: 30,
@@ -58,10 +60,7 @@ export const design = {
         boxShadow: { color: "transparent", x: 0, y: 0, blur: 0 },
       },
       animations: {},
-      metadata: {
-        headline: "make money from spotify",
-        subline: "But it's greater when you actually can",
-      },
+      metadata: { ...TEXT_DEFAULTS },
     },
   },
 };

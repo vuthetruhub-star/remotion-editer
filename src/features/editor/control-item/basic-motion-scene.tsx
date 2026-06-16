@@ -14,9 +14,11 @@ import {
   LayerKey,
   OrderableKey,
   LAYER_KEYS,
-  ORDERABLE_KEYS,
+  TEXT_LAYER_KEYS,
   LAYER_LABELS,
   DEFAULT_LAYER,
+  DEFAULT_LAYER_TEXT_STYLE,
+  isTextLayerKey,
   parseMotionSceneMeta,
 } from "../player/items/schemas/motion-scene.schema";
 
@@ -446,11 +448,6 @@ const TextStyleInspector: React.FC<{
 const MAX_HISTORY = 60;
 const MAX_SAVES   = 5;
 
-const TEXT_LAYER_KEYS = ["headline", "subline"] as const;
-type TextLayerKey = (typeof TEXT_LAYER_KEYS)[number];
-const isTextLayer = (k: LayerKey): k is TextLayerKey =>
-  TEXT_LAYER_KEYS.includes(k as TextLayerKey);
-
 type LayerSaveStack = { saves: LayerConfig[]; pos: number };
 const emptyStack = (): LayerSaveStack => ({ saves: [], pos: -1 });
 const initSaveStacks = (): Record<LayerKey, LayerSaveStack> =>
@@ -536,7 +533,7 @@ const BasicMotionScene = ({ trackItem }: { trackItem: ITrackItem }) => {
     setMeta(next);
   }, [trackItem.id]);
 
-  const updateMeta = (key: keyof Pick<MotionSceneMeta, "headline" | "subline">, value: string) => {
+  const updateContent = (key: string, value: string) => {
     const next = MotionSceneSchema.parse({ ...meta, [key]: value });
     applyMeta(meta, next);
   };
@@ -554,15 +551,13 @@ const BasicMotionScene = ({ trackItem }: { trackItem: ITrackItem }) => {
 
   const updateTextStyle = useCallback((field: keyof LayerTextStyleConfig, value: unknown) => {
     const al = activeLayerRef.current;
-    if (!isTextLayer(al)) return; // guard: style only applies to headline / subline
+    if (!isTextLayerKey(al)) return; // guard: style only applies to text layers
     const layerKey = al;
     const prev = metaRef.current;
+    const ts = prev.textStyle as Record<string, LayerTextStyleConfig>;
     const next = MotionSceneSchema.parse({
       ...prev,
-      textStyle: {
-        ...prev.textStyle,
-        [layerKey]: { ...prev.textStyle[layerKey], [field]: value },
-      },
+      textStyle: { ...prev.textStyle, [layerKey]: { ...ts[layerKey], [field]: value } },
     });
     historyRef.current = [...historyRef.current.slice(-MAX_HISTORY), prev];
     dispatch(EDIT_OBJECT, { payload: { [trackItem.id]: { metadata: next } } });
@@ -737,7 +732,7 @@ const BasicMotionScene = ({ trackItem }: { trackItem: ITrackItem }) => {
   }, [trackItem.id]); // activeLayerRef.current is always fresh — no need in deps
 
   // Which text line is currently in edit mode (double-click to activate)
-  const [editingText, setEditingText] = useState<TextLayerKey | null>(null);
+  const [editingText, setEditingText] = useState<string | null>(null);
 
   // ── Save Project — download current metadata as JSON preset ────────────────
   const [showGuide, setShowGuide] = useState(false);
@@ -818,10 +813,11 @@ const BasicMotionScene = ({ trackItem }: { trackItem: ITrackItem }) => {
               </div>
 
               {/* Content block — only for text layers, shown FIRST */}
-              {isTextLayer(activeLayer) && (
+              {isTextLayerKey(activeLayer) && (
                 <div className="flex flex-col gap-1.5">
                   <Label className="text-xs font-semibold">Content</Label>
-                  {(["headline", "subline"] as TextLayerKey[]).map((key) => {
+                  {TEXT_LAYER_KEYS.map((key) => {
+                    const metaAny   = meta as unknown as Record<string, string>;
                     const isActive  = activeLayer === key;
                     const isEditing = editingText === key;
                     return (
@@ -831,25 +827,25 @@ const BasicMotionScene = ({ trackItem }: { trackItem: ITrackItem }) => {
                           isActive ? "border border-green-500/50 bg-green-500/8 shadow-[0_0_10px_rgba(0,255,65,0.12)]"
                                    : "border border-white/10 bg-white/3 hover:border-white/20",
                         ].join(" ")}
-                        onClick={() => handleLayerSelect(key, false)}
-                        onDoubleClick={(e) => { e.preventDefault(); handleLayerSelect(key, false); setEditingText(key); }}
+                        onClick={() => handleLayerSelect(key as LayerKey, false)}
+                        onDoubleClick={(e) => { e.preventDefault(); handleLayerSelect(key as LayerKey, false); setEditingText(key); }}
                       >
                         <p className={["text-[9px] font-mono mb-1", isActive ? "text-green-400/60" : "text-muted-foreground/40"].join(" ")}>
-                          {LAYER_LABELS[key]}
+                          {LAYER_LABELS[key as LayerKey]}
                         </p>
                         {isEditing ? (
                           <Input
                             autoFocus
                             className="h-6 text-xs bg-transparent border-0 border-b border-white/20 rounded-none px-0 focus-visible:ring-0 focus-visible:border-green-500/50"
-                            value={meta[key]}
-                            onChange={(e) => updateMeta(key, e.target.value)}
+                            value={metaAny[key] ?? ""}
+                            onChange={(e) => updateContent(key, e.target.value)}
                             onBlur={() => setEditingText(null)}
                             onKeyDown={(e) => { if (e.key === "Enter") setEditingText(null); }}
                             onClick={(e) => e.stopPropagation()}
                           />
                         ) : (
                           <p className={["text-xs font-mono truncate leading-snug", isActive ? "text-white" : "text-muted-foreground/70"].join(" ")}>
-                            {meta[key]}
+                            {metaAny[key]}
                           </p>
                         )}
                       </div>
@@ -867,11 +863,11 @@ const BasicMotionScene = ({ trackItem }: { trackItem: ITrackItem }) => {
               />
 
               {/* Text Style */}
-              {isTextLayer(activeLayer) && (
+              {isTextLayerKey(activeLayer) && (
                 <div className="flex flex-col gap-3 pt-2 border-t border-white/8">
                   <Label className="text-xs font-semibold">Text Style</Label>
                   <TextStyleInspector
-                    ts={meta.textStyle[activeLayer as "headline" | "subline"]}
+                    ts={(meta.textStyle as Record<string, LayerTextStyleConfig>)[activeLayer] ?? DEFAULT_LAYER_TEXT_STYLE}
                     onUpdate={updateTextStyle}
                   />
                 </div>
