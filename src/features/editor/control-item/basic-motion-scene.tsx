@@ -14,6 +14,7 @@ import {
   LayerKey,
   OrderableKey,
   LAYER_KEYS,
+  ORDERABLE_KEYS,
   TEXT_LAYER_KEYS,
   LAYER_LABELS,
   DEFAULT_LAYER,
@@ -495,7 +496,7 @@ const BasicMotionScene = ({ trackItem }: { trackItem: ITrackItem }) => {
     loadPersistedMeta(trackItem.id) ?? parseMotionSceneMeta(trackItem.metadata)
   );
   // Multi-select: Ctrl+click adds/removes layers. 1 layer = single mode, 2+ = group mode.
-  const [selectedLayers, setSelectedLayers] = useState<LayerKey[]>(["folder"]);
+  const [selectedLayers, setSelectedLayers] = useState<LayerKey[]>([ORDERABLE_KEYS[0] ?? LAYER_KEYS[0]]);
   const [saveError, setSaveError]   = useState<string | null>(null);
   const [saveStackVersion, setSaveStackVersion] = useState(0);
 
@@ -523,7 +524,7 @@ const BasicMotionScene = ({ trackItem }: { trackItem: ITrackItem }) => {
     historyRef.current = [];
     saveStacksRef.current = loadSaveStacks(trackItem.id);
     setSaveStackVersion((v) => v + 1);
-    setSelectedLayers(["folder"]);
+    setSelectedLayers([ORDERABLE_KEYS[0] ?? LAYER_KEYS[0]]);
   }, [trackItem.id]); // dep on id only — metadata changes (same clip) must NOT reset selection
 
   // Push to history, then apply and dispatch.
@@ -804,8 +805,8 @@ const BasicMotionScene = ({ trackItem }: { trackItem: ITrackItem }) => {
                 <div className="flex items-center justify-between">
                   <p className="text-[9px] text-muted-foreground/50 font-mono">Ctrl+S save · ⇧Z back · ⇧F fwd · Z undo</p>
                   <SaveStackIndicator
-                    saves={saveStacksRef.current[activeLayer].saves}
-                    pos={saveStacksRef.current[activeLayer].pos}
+                    saves={saveStacksRef.current[activeLayer]?.saves ?? []}
+                    pos={saveStacksRef.current[activeLayer]?.pos ?? 0}
                     key={saveStackVersion}
                   />
                 </div>
