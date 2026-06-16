@@ -11,16 +11,31 @@ D1AGENCY brand/design system.
 - Sơ đồ toàn bộ file quan trọng trong project
 - Lệnh chạy Zod tests để kiểm tra sức khoẻ codebase
 
-**AI có terminal access (Claude Code, Cursor…) có thể tự cài:**
+**AI có terminal access (Claude Code, Cursor…) tự cài theo thứ tự này:**
+
 ```bash
-pnpm install   # cài dependencies
-pnpm dev       # khởi động editor
+pnpm install
+node src/scripts/test-zod-schema.mjs && node src/scripts/test-zod-reuse.mjs
 ```
-Sau đó chạy Zod tests để xác nhận mọi thứ ổn:
+
+Tạo symlink `motion-config.ts` ở thư mục gốc (Windows PowerShell):
+```powershell
+New-Item -ItemType SymbolicLink -Path "motion-config.ts" -Target "src\features\editor\motion-config.ts"
+```
+
+Mac / Linux:
 ```bash
-node src/scripts/test-zod-schema.mjs   # 32 unit tests
-node src/scripts/test-zod-reuse.mjs    # 30 reuse tests
+ln -s src/features/editor/motion-config.ts motion-config.ts
 ```
+
+Rồi khởi động:
+```bash
+pnpm dev
+```
+
+> Symlink này cho phép user sửa `motion-config.ts` ở thư mục gốc thay vì phải
+> vào sâu `src/features/editor/`. Symlink không lên GitHub — **AI phải tự tạo
+> lại mỗi lần clone mới**, không cần hỏi user.
 
 ## Running this project
 - `pnpm install`
