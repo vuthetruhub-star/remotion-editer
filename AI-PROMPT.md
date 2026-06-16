@@ -46,13 +46,28 @@ Ví dụ:
 - 1 dòng tiêu đề phía dưới logo (text)
 - 1 dòng mô tả nhỏ hơn (text)
 
-Hãy:
-1. Cập nhật motion-config.ts với các layer phù hợp
-2. Viết animation trong src/features/editor/player/items/motion-scene.tsx
-   — dùng token từ src/brand.ts, không hardcode màu/font/spacing
-   — áp dụng recipe phù hợp từ D1A-motion.md
-3. Chạy 62 Zod tests để kiểm tra
-4. Báo cáo kết quả
+Hãy trả về ĐÚNG 2 FILE, không thêm không bớt:
+
+### FILE 1 — motion-config.ts
+Chỉ phần LAYER_CONFIG và TEXT_DEFAULTS. Không thay đổi phần còn lại của file.
+Không tạo mock.ts, không tạo schema — các file đó tự cập nhật theo config.
+
+### FILE 2 — src/features/editor/player/items/motion-scene.tsx
+File animation hoàn chỉnh, có thể paste vào repo và chạy ngay.
+Yêu cầu bắt buộc:
+- Import layerKey từ motion-config, KHÔNG hardcode tên layer
+- Dùng token từ src/brand.ts (colors.*, fonts.*, radii.*) — KHÔNG hardcode màu/font
+- KHÔNG dùng CSS transition hay CSS animation — dùng useCurrentFrame() + interpolate()
+- Lấy fps từ useVideoConfig() — không hardcode 30
+- Tất cả layer là sibling (cùng cấp), KHÔNG nest layer trong layer khác
+- Export default function MotionScene với đúng signature:
+  ({ item, options }: { item: ITrackItem; options: SequenceItemOptions })
+- Dùng parseMotionSceneMeta(item.metadata) để lấy data
+- Wrap bằng BaseSequence như file gốc
+
+Sau khi tôi paste 2 file vào repo:
+- Chạy: node src/scripts/test-zod-schema.mjs && node src/scripts/test-zod-reuse.mjs
+- Báo cáo kết quả pass/fail
 ```
 
 ---
