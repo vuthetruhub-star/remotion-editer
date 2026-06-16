@@ -71,29 +71,14 @@ Không cần thay đổi — chỉ copy paste và đặt tên phù hợp.
 
 ```ts
 import { z } from 'zod';
-
-// ─── LAYER SCHEMA — dùng cho mọi sub-layer ───────────────────────────────────
-// fromFrame / durationFrames: relative to clip start (frame 0 = first frame of clip)
-const LayerSchema = z.object({
-  x:              z.number().default(0),    // horizontal offset (px)
-  y:              z.number().default(0),    // vertical offset (px)
-  scale:          z.number().default(1),    // size multiplier (0.1 – 5)
-  rotate:         z.number().default(0),    // rotation (0–360 deg)
-  opacity:        z.number().min(0).max(100).default(100),   // 0–100
-  fromFrame:      z.number().default(0),    // when this layer appears (relative frame)
-  durationFrames: z.number().default(150),  // how long (150f = 5s @ 30fps)
-  blur:           z.number().min(0).max(20).default(0),      // per-layer blur (px)
-  brightness:     z.number().min(0).max(200).default(100),   // per-layer brightness (%)
-});
-
-export type LayerConfig = z.infer<typeof LayerSchema>;
-
-// Default layer — dùng cho Ctrl+Shift+Z reset
-export const DEFAULT_LAYER: LayerConfig = {
-  x: 0, y: 0, scale: 1, rotate: 0,
-  opacity: 100, fromFrame: 0, durationFrames: 150,
-  blur: 0, brightness: 100,
-};
+// ── Import tất cả primitives từ _shared.ts — KHÔNG tự viết lại ───────────────
+import {
+  LayerSchema, LayerTextStyleSchema,
+  DEFAULT_LAYER, DEFAULT_LAYER_TEXT_STYLE,
+  zIdxOf, sanitizeZOrder,
+} from './_shared';
+import type { LayerConfig, LayerTextStyleConfig } from './_shared';
+// DEFAULT_LAYER = LayerSchema.parse({}) — derived tự động, không hardcode
 ```
 
 ### UI slider specs cho LayerConfig props
@@ -155,14 +140,12 @@ export type LayersConfig = MyAssetMeta['layers'];
 
 export const parseMyAssetMeta = (metadata: unknown): MyAssetMeta => {
   const result = MyAssetSchema.safeParse(metadata ?? {});
-  return result.success ? result.data : MyAssetSchema.parse({});
+  const data   = result.success ? result.data : MyAssetSchema.parse({});
+  // sanitizeZOrder: lọc key lạ từ localStorage corrupt, reset về defaults nếu rỗng
+  const clean  = sanitizeZOrder(data.zOrder, ORDERABLE_KEYS, [...ORDERABLE_KEYS]);
+  return clean === data.zOrder ? data : { ...data, zOrder: clean };
 };
-
-// z-index từ zOrder position (background luôn = 0)
-export const zIdxOf = (key: string, zOrder: string[]): number => {
-  const i = zOrder.indexOf(key);
-  return i === -1 ? 0 : i + 1;
-};
+// zIdxOf đã import từ _shared.ts — không khai báo lại
 ```
 
 **Nguyên tắc:**
@@ -201,15 +184,10 @@ const TextStyleSchema = z.object({
 
 export type TextStyleConfig = z.infer<typeof TextStyleSchema>;
 
-export const DEFAULT_LAYER_TEXT_STYLE: LayerTextStyleConfig = {
-  bold: false, underline: false, textTransform: "none",
-  color: "#C8E6C8", textAlign: "center", strokeWidth: 0, strokeColor: "#00FF41", maxWidth: 0,
-};
-
-export const DEFAULT_TEXT_STYLE: TextStyleConfig = {
-  headline: DEFAULT_LAYER_TEXT_STYLE,
-  subline:  { ...DEFAULT_LAYER_TEXT_STYLE, color: "#78A878" },
-};
+// Single source of truth — derived từ schema, không hardcode
+// DEFAULT_LAYER_TEXT_STYLE đã import từ _shared.ts (generic defaults)
+// DEFAULT_TEXT_STYLE dùng TextStyleSchema.parse({}) để tự fill per-layer defaults
+export const DEFAULT_TEXT_STYLE: TextStyleConfig = TextStyleSchema.parse({});
 ```
 
 ### Sử dụng trong control panel
