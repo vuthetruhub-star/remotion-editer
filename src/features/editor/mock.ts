@@ -1,6 +1,6 @@
 // RENAME: Replace ids and type keys with your project name.
 // Type key "motionScene" must match the key in sequence-item.tsx, timeline.tsx, and control-item.tsx.
-import { TEXT_DEFAULTS } from "./motion-config";
+import { TEXT_DEFAULTS, DURATION_MS } from "./motion-config";
 
 export const design = {
   id: "motion-scene-default",
@@ -38,9 +38,9 @@ export const design = {
       type: "motionScene",
       display: {
         from: 0,
-        to: 5000,
+        to: DURATION_MS,
       },
-      duration: 5000,
+      duration: DURATION_MS,
       details: {
         width: 1080,
         height: 1920,

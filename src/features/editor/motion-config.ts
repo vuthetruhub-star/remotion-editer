@@ -1,33 +1,26 @@
 // ══════════════════════════════════════════════════════════════════
-//  motion-config.ts  ←  CHỈ CHỈNH FILE NÀY KHI ĐỔI MOTION MỚI
-//
-//  Định nghĩa tên layer + loại → Zod schema, control panel,
-//  mock data tự cập nhật theo. Không cần sửa file nào khác.
+//  motion-config.ts  —  Scene 3: AI Song Farming (330f / 11s)
 // ══════════════════════════════════════════════════════════════════
 
-// Layer types:
-//   "background" → luôn z=0, không reorder, không có TextStyle
-//   "asset"      → reorderable, chỉ LayerSchema (hình, trang trí, card, folder…)
-//   "text"       → reorderable, LayerSchema + đầy đủ TextStyle controls (màu, bold, align…)
 export type LayerType = "background" | "asset" | "text";
 
-// ── Khai báo layers của motion này ─────────────────────────────
-// Thêm / xóa / đổi tên layer ở đây → mọi thứ tự cập nhật.
-// Luôn phải có ít nhất 1 layer type "background".
-// "text" layer tự có controls: màu, bold, align, stroke, maxWidth…
+// ── Thời lượng video (ms) — 1000ms = 1 giây ────────────────────
+export const DURATION_MS = 11000; // 330f @ 30fps = 11s
+
 export const LAYER_CONFIG = {
-  background: { type: "background" as const, label: "Background" },
-  // Thêm layer tại đây, ví dụ:
-  // logo:     { type: "asset" as const, label: "Logo"   },
-  // title:    { type: "text"  as const, label: "Text 1" },
-  // subtitle: { type: "text"  as const, label: "Text 2", defaultColor: "#78A878" },
+  background:     { type: "background" as const, label: "Background" },
+  greenOrb:       { type: "asset"      as const, label: "Green Orb" },
+  sunoMockup:     { type: "asset"      as const, label: "Suno Mockup" },
+  streamCounter:  { type: "asset"      as const, label: "Stream Counter" },
+  line1:          { type: "text"       as const, label: "Line 1", defaultColor: "#EDEFEC" },
+  line2:          { type: "text"       as const, label: "Line 2", defaultColor: "#EDEFEC" },
+  line3:          { type: "text"       as const, label: "Line 3", defaultColor: "#EDEFEC" },
 } as const;
 
-// ── Nội dung mặc định cho từng text layer ──────────────────────
-// Key phải trùng với tên layer có type "text" ở trên.
 export const TEXT_DEFAULTS: Record<string, string> = {
-  // title:    "Tiêu đề mặc định",
-  // subtitle: "Mô tả mặc định",
+  line1: "Create AI songs with Suno",
+  line2: "Register as artist on Spotify",
+  line3: "Get streams. Get paid.",
 };
 
 // ══════════════════════════════════════════════════════════════════
