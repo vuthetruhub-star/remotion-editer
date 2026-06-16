@@ -27,9 +27,17 @@ Sau đó đọc CLAUDE.md để hiểu cách repo này hoạt động trước k
 ## Prompt mẫu — Làm motion mới
 
 ```
-Đọc CLAUDE.md và motion-config.ts trước.
+Trước khi làm bất cứ điều gì, hãy đọc lần lượt các file sau:
 
-Tôi muốn làm motion mới với các layer sau:
+1. CLAUDE.md                                         — quy tắc và kiến trúc repo
+2. src/brand.ts                                      — màu, font, spacing, motion tokens
+3. src/brand-docs/BRAND.md                           — design system D1A đầy đủ
+4. src/brand-docs/D1A-motion.md                      — 12 motion recipe sẵn có
+5. src/brand-docs/D1A-motion-describe.md             — cách dịch ý tưởng → Remotion code
+6. src/features/editor/player/items/motion-scene.tsx — code animation hiện tại làm reference
+7. motion-config.ts                                  — cấu trúc layer hiện tại
+
+Sau khi đọc xong, tôi muốn làm motion mới với mô tả sau:
 [MÔ TẢ MOTION CỦA BẠN Ở ĐÂY]
 
 Ví dụ:
@@ -41,6 +49,8 @@ Ví dụ:
 Hãy:
 1. Cập nhật motion-config.ts với các layer phù hợp
 2. Viết animation trong src/features/editor/player/items/motion-scene.tsx
+   — dùng token từ src/brand.ts, không hardcode màu/font/spacing
+   — áp dụng recipe phù hợp từ D1A-motion.md
 3. Chạy 62 Zod tests để kiểm tra
 4. Báo cáo kết quả
 ```
