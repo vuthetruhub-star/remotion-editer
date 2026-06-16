@@ -4,6 +4,24 @@ This repo is `designcombo/react-video-editor` (Next.js video editor app with a
 built-in Remotion player, timeline, and control panels) combined with the
 D1AGENCY brand/design system.
 
+## Nếu đây là lần đầu mở repo này (fresh clone)
+
+**Đọc `HOW-TO-START.md` trước** — file đó có đủ:
+- Lệnh cài đặt từng bước (Windows / Mac / Linux)
+- Sơ đồ toàn bộ file quan trọng trong project
+- Lệnh chạy Zod tests để kiểm tra sức khoẻ codebase
+
+**AI có terminal access (Claude Code, Cursor…) có thể tự cài:**
+```bash
+pnpm install   # cài dependencies
+pnpm dev       # khởi động editor
+```
+Sau đó chạy Zod tests để xác nhận mọi thứ ổn:
+```bash
+node src/scripts/test-zod-schema.mjs   # 32 unit tests
+node src/scripts/test-zod-reuse.mjs    # 30 reuse tests
+```
+
 ## Running this project
 - `pnpm install`
 - `pnpm dev` — starts the Next.js editor at http://localhost:3000
@@ -43,7 +61,8 @@ When adding or editing elements, control panels, or compositions, import from
 Viết Zod schema **song song** với animation, không phải sau khi hoàn thành animation.
 
 - Schema file: `src/features/editor/player/items/schemas/[name].schema.ts`
-- Mọi asset đều dùng **LayerSchema** (7 props: x, y, scale, rotate, opacity, fromFrame, durationFrames)
+- Mọi asset đều dùng **LayerSchema** (9 props: x, y, scale, rotate, opacity, fromFrame, durationFrames, blur, brightness)
+- Import từ `src/features/editor/player/items/schemas/_shared.ts` — không viết lại LayerSchema
 - Zod **không** ảnh hưởng chất lượng Remotion — chỉ validate `item.metadata` JSON ở cửa vào
 - Chi tiết đầy đủ: `src/brand-docs/EDITOR-integration.md`
 

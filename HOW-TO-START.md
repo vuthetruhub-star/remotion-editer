@@ -1,164 +1,219 @@
 # HOW TO START — D1A Motion Editor
 
-Clone, cài đặt và chạy editor trong 1 lệnh duy nhất.
+> Đọc file này trước khi làm bất cứ điều gì với repo này.
+> Dành cho: người dùng mới, AI assistant (Claude, Cursor…), developer onboard.
 
 ---
 
-## Yêu cầu trước khi cài
+## Nếu bạn là AI có terminal access
 
-| Thứ cần có | Kiểm tra | Tải về |
-|---|---|---|
-| Git | `git --version` | https://git-scm.com |
-| Node.js 18+ | `node --version` | https://nodejs.org |
-| pnpm | `pnpm --version` | tự cài ở bước dưới |
+Chạy 3 lệnh này theo thứ tự — không cần đọc thêm:
+
+```bash
+pnpm install
+pnpm dev
+node src/scripts/test-zod-schema.mjs && node src/scripts/test-zod-reuse.mjs
+```
+
+Nếu `pnpm dev` chạy được và 62 tests pass → sẵn sàng. Editor tại `http://localhost:3000/edit`.
 
 ---
 
-## Cài đặt — Windows (PowerShell)
+## Nếu bạn là người dùng — Cài bằng 1 lệnh tự động
 
-### Bước 1 — Mở PowerShell với quyền Admin
+### Windows
 
-`Win + X` → **Windows PowerShell (Admin)**
+**Bước 1 — Mở PowerShell**
 
-### Bước 2 — Bỏ khoá script (làm 1 lần duy nhất)
+Có 2 cách:
+- Nhấn `Win + X` trên bàn phím → chọn **"Windows PowerShell"** hoặc **"Terminal"**
+- Hoặc nhấn `Win + S` → gõ `powershell` → nhấn Enter
+
+Bạn sẽ thấy cửa sổ màu xanh đen với dấu nhắc `PS C:\Users\TênBạn>`
+
+**Bước 2 — Cho phép chạy script (làm 1 lần duy nhất)**
+
+Dán đoạn này vào cửa sổ PowerShell rồi nhấn Enter:
 
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
-Gõ `Y` → Enter.
+PowerShell sẽ hỏi xác nhận — gõ chữ `Y` rồi nhấn Enter.
 
-### Bước 3 — Chạy setup
+**Bước 3 — Chạy lệnh cài đặt**
+
+Dán đoạn này vào PowerShell rồi nhấn Enter:
 
 ```powershell
 iex (iwr "https://raw.githubusercontent.com/vuthetruhub-star/remotion-editer/main/scripts/setup.ps1").Content
 ```
 
-Script tự động:
-- Clone repo vào `Downloads\d1a-motion-editor`
-- Cài tất cả dependencies (`pnpm install`)
-- Chạy Zod tests (62 tests)
-- Kiểm tra 12 file quan trọng
-- Báo **READY** nếu mọi thứ đúng
+Script sẽ tự động làm tất cả — chờ khoảng 2-5 phút.
 
-### Nếu gặp lỗi TLS / "iwr not found"
+Khi thấy chữ **READY** màu xanh lá → xong.
 
-Chạy dòng này trước rồi thử lại Bước 3:
-
+**Nếu gặp lỗi "iwr 404"**: chạy dòng này trước rồi thử lại Bước 3:
 ```powershell
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 ```
 
 ---
 
-## Cài đặt — Mac / Linux (Terminal)
+### Mac / Linux
+
+Mở **Terminal** rồi dán lệnh này:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/vuthetruhub-star/remotion-editer/main/scripts/setup.sh | bash
 ```
 
+Chờ khoảng 2-5 phút. Khi thấy **READY** → xong.
+
 ---
 
-## Sau khi setup xong
+## Script tự động làm gì?
 
-```bash
+```
+Bước 1 — Kiểm tra git, node, pnpm đã cài chưa
+Bước 2 — Clone repo vào thư mục Downloads
+Bước 3 — Chạy pnpm install (cài toàn bộ dependencies)
+Bước 4 — Chạy 62 Zod tests để kiểm tra codebase
+Bước 5 — Kiểm tra 12 file quan trọng có đủ không
+Bước 6 — In báo cáo READY + sơ đồ file
+```
+
+---
+
+## Sau khi cài xong — Khởi động editor
+
+Mở PowerShell (hoặc Terminal), dán từng dòng:
+
+```powershell
 cd ~/Downloads/d1a-motion-editor
+```
+```powershell
 pnpm dev
 ```
 
-Mở trình duyệt: **http://localhost:3000/edit**
+Mở trình duyệt vào: **http://localhost:3000/edit**
 
 ---
 
-## Chạy thủ công (không dùng script)
+## Cài thủ công (không dùng script)
 
+Nếu không dùng script tự động, làm từng bước:
+
+**1. Clone repo**
 ```bash
-git clone https://github.com/vuthetruhub-star/remotion-editer.git
-cd remotion-editer
+git clone https://github.com/vuthetruhub-star/remotion-editer.git d1a-motion-editor
+```
+
+**2. Vào thư mục**
+```bash
+cd d1a-motion-editor
+```
+
+**3. Cài dependencies**
+```bash
 pnpm install
+```
+
+**4. Chạy editor**
+```bash
 pnpm dev
 ```
 
+**5. Mở trình duyệt vào:** http://localhost:3000/edit
+
 ---
 
-## Kiểm thử Zod schema (tuỳ chọn)
+## Kiểm thử Zod schema
+
+Chạy trong PowerShell hoặc Terminal từ thư mục project:
 
 ```bash
-# Unit tests — 32 tests
+# 32 unit tests — kiểm tra schema parse, validate, defaults
 node src/scripts/test-zod-schema.mjs
 
-# Reusability tests — 30 tests (MotionScene · LogoBanner · StatsCard)
+# 30 reuse tests — kiểm tra dùng lại schema với asset tên khác
 node src/scripts/test-zod-reuse.mjs
 ```
 
+Kết quả đúng: `TOTAL: 32 | PASS: 32 | FAIL: 0`
+
 ---
 
-## File map — Dành cho AI / Developer mới
+## Sơ đồ file quan trọng
 
 ```
+HOW-TO-START.md                                     ← File này
+CLAUDE.md                                           ← Hướng dẫn cho AI assistant
+
 src/
-├── brand.ts                                        ← Design tokens (màu, font, spacing, radii, motion)
+├── brand.ts                                        ← Màu sắc, font, spacing, motion tokens
 ├── brand-docs/
 │   ├── BRAND.md                                    ← Tài liệu brand đầy đủ
-│   ├── D1A-motion.md                               ← 12 motion recipes + rules
-│   ├── D1A-motion-describe.md                      ← Dịch plain language → Remotion code
+│   ├── D1A-motion.md                               ← 12 motion recipes + animation rules
+│   ├── D1A-motion-describe.md                      ← Dịch ý tưởng → Remotion code
 │   └── EDITOR-integration.md                       ← Hướng dẫn tạo asset mới (đọc trước khi code)
 │
 ├── features/editor/
 │   ├── editor.tsx                                  ← Entry point của editor
-│   ├── navbar.tsx                                  ← Download · Quality · New Project
-│   ├── mock.ts                                     ← Design data mặc định khi khởi động
+│   ├── navbar.tsx                                  ← Nút Download, Quality (1080p/2K/4K), New Project
+│   ├── mock.ts                                     ← Dữ liệu mặc định khi mở editor
 │   │
 │   ├── player/items/
 │   │   ├── schemas/
-│   │   │   ├── _shared.ts                          ← ZOD SHARED: LayerSchema · TextStyleSchema · zIdxOf
-│   │   │   └── motion-scene.schema.ts              ← Zod schema của MotionScene asset
-│   │   └── motion-scene.tsx                        ← Remotion composition
+│   │   │   ├── _shared.ts                          ← ZOD DÙNG CHUNG: LayerSchema (9 props) + TextStyleSchema
+│   │   │   └── motion-scene.schema.ts              ← Zod schema riêng cho MotionScene
+│   │   └── motion-scene.tsx                        ← Remotion composition (animation code)
 │   │
 │   ├── control-item/
-│   │   └── basic-motion-scene.tsx                  ← Control panel (right sidebar)
+│   │   └── basic-motion-scene.tsx                  ← Panel điều khiển bên phải
 │   │
 │   ├── store/
-│   │   └── use-download-state.ts                   ← Export state: scale · format · progress
+│   │   └── use-download-state.ts                   ← Quản lý export: scale, format, progress
 │   │
 │   └── utils/
-│       └── autosave.ts                             ← localStorage autosave helpers
+│       └── autosave.ts                             ← Tự lưu vào localStorage
 │
 ├── scripts/
-│   ├── remotion-render.mjs                         ← Render script (child process, tránh SSR clash)
-│   ├── test-zod-schema.mjs                         ← Zod unit tests (32 tests)
-│   └── test-zod-reuse.mjs                          ← Zod reuse tests (30 tests)
+│   ├── remotion-render.mjs                         ← Script render video (chạy riêng, tránh SSR lỗi)
+│   ├── test-zod-schema.mjs                         ← 32 unit tests cho Zod schema
+│   └── test-zod-reuse.mjs                          ← 30 tests kiểm tra tái sử dụng schema
 │
 └── app/
     ├── edit/
-    │   ├── editor-client.tsx                       ← SSR fix: "use client" + ssr:false wrapper
+    │   ├── editor-client.tsx                       ← Bọc editor với "use client" + ssr:false
     │   └── page.tsx
     └── api/
-        └── render-local/route.ts                   ← API: nhận POST → spawn render script
+        └── render-local/route.ts                   ← API nhận yêu cầu export → chạy render script
 ```
 
 ---
 
-## Khi tạo asset mới
+## Tạo asset mới
 
 1. Đọc `src/brand-docs/EDITOR-integration.md`
-2. Tạo schema mới — import từ `_shared.ts`:
+2. Tạo file schema mới, import từ `_shared.ts`:
 
 ```ts
 import { LayerSchema, LayerTextStyleSchema, DEFAULT_LAYER, zIdxOf, sanitizeZOrder }
   from './_shared';
 ```
 
-3. Khai báo `ORDERABLE_KEYS` của asset → xong.
+3. Khai báo `ORDERABLE_KEYS` riêng cho asset của bạn → xong.
 
 ---
 
-## Các lỗi thường gặp
+## Lỗi thường gặp
 
-| Lỗi | Nguyên nhân | Fix |
+| Lỗi thấy | Nguyên nhân | Cách sửa |
 |---|---|---|
-| `404 Not Found` khi chạy iwr | Chưa push code lên GitHub | `git push origin main` |
-| `iwr not found` | PowerShell quá cũ hoặc lỗi TLS | Chạy lệnh TLS ở trên |
-| Port 3000 đã bị chiếm | App cũ chưa tắt | `pnpm dev` tự kill port qua predev script |
-| Editor trắng / crash | Remotion SSR conflict | editor-client.tsx đã fix, không cần làm gì thêm |
-| Zod test fail sau đổi schema | localStorage data cũ không match | Xoá localStorage hoặc export JSON preset trước |
+| `iwr : 404 Not Found` | Code chưa push lên GitHub | `git push origin main` |
+| `iwr not found` / lỗi TLS | PowerShell cần bật TLS 1.2 | Chạy: `[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12` |
+| Port 3000 bị chiếm | App cũ chưa tắt | `pnpm dev` tự kill port qua predev script |
+| Trang trắng / editor crash | Remotion SSR conflict | `editor-client.tsx` đã fix sẵn, không cần làm gì |
+| Zod test fail | localStorage cũ không khớp schema mới | Xoá localStorage trong DevTools hoặc export JSON preset trước |
+| `pnpm: command not found` | Chưa cài pnpm | Chạy: `npm install -g pnpm` |
