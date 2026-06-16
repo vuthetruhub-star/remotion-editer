@@ -1,5 +1,11 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# Root symlink (local convenience only — source is src/features/editor/motion-config.ts)
+/motion-config.ts
+
+# Screenshots / preview images
+*.png
+
 # dependencies
 /node_modules
 /.pnp
