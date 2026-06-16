@@ -124,15 +124,43 @@ Layer KHÔNG được nằm trong transform div của layer khác.
 3. Bấm **New Project** trong editor (icon FilePlus, góc trên trái) để xóa localStorage
 4. Reload → thấy motion mới
 
-### 8. File quan trọng
+### 8. File người dùng chỉnh — CHỈ 2 FILE NÀY
 ```
-motion-config.ts                                    ← CHỈ SỬA FILE NÀY khi đổi motion
-src/features/editor/player/items/motion-scene.tsx   ← Animation code (AI viết)
-src/features/editor/player/items/schemas/
-  ├── _shared.ts               ← LayerSchema + TextStyleSchema (không sửa)
-  └── motion-scene.schema.ts   ← Tự derive từ motion-config.ts (không sửa)
-src/features/editor/control-item/basic-motion-scene.tsx  ← Control panel (không sửa)
-src/features/editor/mock.ts                         ← Mock data (không sửa)
+motion-config.ts        ← khai báo layer (symlink → src/features/editor/motion-config.ts)
+motion-scene.tsx        ← animation code (symlink → src/features/editor/player/items/motion-scene.tsx)
+```
+
+File tự cập nhật theo (KHÔNG sửa):
+```
+src/features/editor/player/items/schemas/motion-scene.schema.ts  ← derive từ motion-config
+src/features/editor/control-item/basic-motion-scene.tsx          ← control panel
+src/features/editor/mock.ts                                       ← mock data
+```
+
+### 9. Cấu trúc motion-scene.tsx chuẩn
+```tsx
+// Imports bắt buộc
+import { ITrackItem } from "@designcombo/types";
+import { BaseSequence, SequenceItemOptions } from "../base-sequence";
+import { useCurrentFrame, interpolate, Easing, AbsoluteFill, useVideoConfig } from "remotion";
+import { colors, fonts, radii, motion as M } from "../../../../brand";
+import {
+  LayerConfig, LayerTextStyleConfig,
+  parseMotionSceneMeta, zIdxOf,
+} from "./schemas/motion-scene.schema";
+
+// Export mặc định — đúng signature, không đổi
+export default function MotionScene({
+  item, options,
+}: {
+  item: ITrackItem;
+  options: SequenceItemOptions;
+}) {
+  const meta = parseMotionSceneMeta(item.metadata);
+  const { layers, zOrder, textStyle } = meta;
+  // Lấy text content: (meta as unknown as Record<string, string>).tenLayer
+  return BaseSequence({ item, options, children: <RootScene ... /> });
+}
 ```
 
 ---
