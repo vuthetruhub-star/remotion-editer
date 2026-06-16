@@ -1,5 +1,8 @@
 // ══════════════════════════════════════════════════════════════════
 //  motion-config.ts  —  Scene 3: AI Song Farming (330f / 11s)
+//
+//  Layers: background, greenOrb, sunoMockup, streamCounter,
+//          line1, line2, line3
 // ══════════════════════════════════════════════════════════════════
 
 export type LayerType = "background" | "asset" | "text";

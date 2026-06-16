@@ -49,7 +49,12 @@ Ví dụ:
 Hãy trả về ĐÚNG 2 FILE, không thêm không bớt:
 
 ### FILE 1 — motion-config.ts
-Chỉ phần LAYER_CONFIG và TEXT_DEFAULTS. Không thay đổi phần còn lại của file.
+Phải có đủ 3 phần sau, không thêm không bớt:
+1. `LAYER_CONFIG` — khai báo các layer
+2. `TEXT_DEFAULTS` — nội dung mặc định cho text layer
+3. `DURATION_MS` — thời lượng video tính bằng ms (ví dụ: 11000 = 11 giây)
+
+Không thay đổi phần còn lại của file (phần dưới comment "KHÔNG SỬA PHẦN DƯỚI").
 Không tạo mock.ts, không tạo schema — các file đó tự cập nhật theo config.
 
 ### FILE 2 — src/features/editor/player/items/motion-scene.tsx
