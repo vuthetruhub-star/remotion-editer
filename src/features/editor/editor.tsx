@@ -30,6 +30,8 @@ import useLayoutStore from "./store/use-layout-store";
 import ControlItemHorizontal from "./control-item-horizontal";
 import { design } from "./mock";
 import { Separator } from "@/components/ui/separator";
+import { IDesign } from "@designcombo/types";
+import { loadSavedDesign, saveDesign } from "./utils/autosave";
 
 const stateManager = new StateManager({
   size: {
@@ -99,9 +101,41 @@ const Editor = ({ tempId, id }: { tempId?: string; id?: string }) => {
   useTimelineEvents();
 
   const { setCompactFonts, setFonts } = useDataState();
-  // useEffect(() => {
-  //   dispatch(DESIGN_LOAD, { payload: design });
-  // }, []);
+
+  // Load saved design from localStorage, fall back to mock.
+  useEffect(() => {
+    const saved = loadSavedDesign();
+    dispatch(DESIGN_LOAD, { payload: saved ?? design });
+  }, []);
+
+  // Auto-save: debounce-write to localStorage whenever store state changes.
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const unsub = useStore.subscribe((state) => {
+      if (!state.trackItemIds.length) return; // don't save empty state
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        const s = stateManager.getState();
+        saveDesign({
+          id: "autosave",
+          fps: s.fps,
+          size: s.size,
+          duration: s.duration,
+          tracks: s.tracks,
+          trackItemIds: s.trackItemIds,
+          trackItemsMap: s.trackItemsMap,
+          transitionIds: s.transitionIds,
+          transitionsMap: s.transitionsMap,
+          structure: s.structure,
+          background: s.background,
+        });
+      }, 1000);
+    });
+    return () => {
+      unsub();
+      if (timer) clearTimeout(timer);
+    };
+  }, []);
   useEffect(() => {
     setCompactFonts(getCompactFontData(FONTS));
     setFonts(FONTS);
@@ -114,6 +148,18 @@ const Editor = ({ tempId, id }: { tempId?: string; id?: string }) => {
         url: SECONDARY_FONT_URL,
       },
     ]);
+  }, []);
+
+  // Warn before accidental close/refresh when there are unsaved changes.
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      const s = useStore.getState();
+      if (s.trackItemIds.length > 0) {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
   }, []);
 
   useEffect(() => {

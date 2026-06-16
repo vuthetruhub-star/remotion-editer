@@ -1,5 +1,6 @@
-// D1AGENCY design tokens — adapted for Remotion (30fps)
+// D1AGENCY design tokens — source of truth for all Remotion compositions
 // Font System: Geist (display/headings/body) + Geist Mono (terminal UX, data, numbers)
+// All motion values in frames at 30fps. Reference: 1f = ~33ms, 30f = 1s
 
 export const colors = {
 	primary: '#00FF41',
@@ -30,86 +31,73 @@ export const colors = {
 };
 
 export const fonts = {
-	// Geist: premium visual hierarchy for display, headings, body
+	// Geist: premium visual hierarchy — display, headings, body
 	display: 'Geist, system-ui, sans-serif',
 	heading: 'Geist, system-ui, sans-serif',
 	body: 'Geist, system-ui, sans-serif',
-	
+
 	// Geist Mono: terminal UX layer — data, numbers, code, buttons, inputs
 	mono: 'Geist Mono, ui-monospace, SF Mono, Menlo, monospace',
-	
+
 	sizes: {
-		// System labels, metadata, badges (Geist Mono)
-		xs: 12,
-		// Supporting copy, code blocks, form inputs, buttons (Geist Mono for inputs/buttons, Geist for text)
-		sm: 14,
-		// Body small (Geist)
-		md: 16,
-		// Body large, feature descriptions (Geist)
-		lg: 18,
-		// H3 / module titles (Geist)
-		xl: 24,
-		// H2 / sub-sections (Geist)
-		xxl: 28,
-		// H1 / section titles (Geist) — 36–48px range
-		h1: 36,
-		// Display / hero headline (Geist) — 56–80px range
-		display: 72,
+		xs: 12,      // System labels, metadata, badges
+		sm: 14,      // Supporting copy, buttons, inputs
+		md: 16,      // Body regular
+		lg: 18,      // Body large, feature descriptions
+		xl: 24,      // H3 / module titles
+		xxl: 28,     // H2 / sub-sections
+		h1: 36,      // H1 / section titles (36–48px range)
+		display: 72, // Display / hero headline (56–80px range)
 	},
+
 	weights: {
-		// Body text, code, labels (Geist / Geist Mono)
-		regular: 400,
-		// Buttons / CTA, command inputs (Geist Mono)
-		medium: 500,
-		// H2, H3, data metrics (Geist for headings, Geist Mono for metrics)
-		semibold: 600,
-		// H1, section headings (Geist)
-		bold: 700,
-		// Display / hero (Geist)
-		heavy: 800,
+		regular: 400,  // Body text, code, labels
+		medium: 500,   // Buttons / CTA, command inputs
+		semibold: 600, // H2, H3, data metrics
+		bold: 700,     // H1, section headings
+		heavy: 800,    // Display / hero
 	},
 };
 
 export const spacing = {
-	xs: 4,
-	sm: 8,
-	md: 16,
-	lg: 32,
-	xl: 64,
-	xxl: 128,
+	xs: 4,    // Icon gaps, inline
+	sm: 8,    // Tight padding, tags
+	md: 16,   // Default padding
+	lg: 32,   // Card padding, component gaps
+	xl: 64,   // Section internal
+	xxl: 128, // Between sections
 };
 
 export const radii = {
-	sm: 4,
-	md: 6,
-	lg: 8,
-	xl: 12,
-	full: 9999,
+	none: 0,    // Terminal frames — hard edge
+	sm: 4,      // Chips, tags, buttons
+	md: 6,      // Inputs, small cards
+	lg: 8,      // Cards
+	xl: 12,     // Modals, panels, bento modules
+	full: 9999, // Status dots ONLY — never default shape
 };
 
-// All values in frames at 30fps
-// Reference: 8f = ~267ms, 15f = 500ms, 30f = 1s
 export const motion = {
-	// Duration tokens
-	press: 2,       // 80ms  — button click feedback
-	fast: 4,        // 140ms — micro-interactions
-	base: 6,        // 200ms — default
-	slow: 8,        // 280ms — exits, modals
-	typing: 1,      // 35ms per character
-	pulse: 60,      // 2000ms — status dot cycle
-	scan: 72,       // 2400ms — skeleton sweep
+	// Duration tokens (frames at 30fps)
+	press: 2,      // ~67ms  — button click feedback
+	fast: 4,       // ~133ms — micro-interactions, hover
+	base: 6,       // ~200ms — default enters/exits
+	slow: 8,       // ~267ms — exits, modals
+	section: 18,   // ~600ms — section / module reveals
+	typing: 1,     // ~33ms per character — typing reveal (#1)
+	pulse: 60,     // 2s     — status dot cycle (#8)
+	scan: 72,      // 2.4s   — skeleton sweep (#11)
 
-	// Easing — use with Remotion's spring() or Easing.*
-	// Equivalent CSS references kept as comments
-	easeOut: 'cubic-bezier(0.23, 1, 0.32, 1)',     // Remotion: spring({ damping: 200 })
-	easeSnap: 'cubic-bezier(0.5, 0, 0.1, 1)',
-	easeInOut: 'cubic-bezier(0.77, 0, 0.175, 1)',
-	easeDrawer: 'cubic-bezier(0.32, 0.72, 0, 1)',
+	// Stagger delays (frames)
+	stagger: 2,    // 60ms  — between stagger reveal items (#10)
+	bootLine: 5,   // 167ms — between boot sequence lines (#2)
 
-	// Enhancement stagger delays (frames)
-	stagger: 2,     // 60ms — between reveal items
-	bootLine: 5,    // 150ms — between boot sequence lines
+	// Ticker
+	tickerDuration: 1200, // 40s full loop — live ticker (#12)
 
-	// Ticker / scanline
-	tickerDuration: 1200, // 40s at 30fps
+	// Easing references (use with Remotion Easing.bezier)
+	easeOut: [0.23, 1, 0.32, 1] as const,     // Elements entering
+	easeSnap: [0.5, 0, 0.1, 1] as const,      // Button press, hover
+	easeInOut: [0.77, 0, 0.175, 1] as const,  // State toggles
+	easeDrawer: [0.32, 0.72, 0, 1] as const,  // Drawer/modal slide
 };

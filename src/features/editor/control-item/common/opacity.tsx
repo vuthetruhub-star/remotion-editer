@@ -1,6 +1,6 @@
 import { Input } from "@/components/ui/input";
-import { Slider } from "@/components/ui/slider";
-import { useState, useEffect } from "react";
+import { Label } from "@/components/ui/label";
+import { useState } from "react";
 
 const Opacity = ({
   value,
@@ -9,52 +9,41 @@ const Opacity = ({
   value: number;
   onChange: (v: number) => void;
 }) => {
-  // Create local state to manage opacity
-  const [localValue, setLocalValue] = useState(value);
+  const [editing, setEditing] = useState<string | null>(null);
 
-  // Update local state when prop value changes
-  useEffect(() => {
-    setLocalValue(value);
-  }, [value]);
+  const commit = (raw: string) => {
+    const n = parseFloat(raw);
+    if (!isNaN(n)) onChange(Math.min(100, Math.max(0, n)));
+    setEditing(null);
+  };
 
   return (
-    <div className="flex gap-2">
-      <div className="flex flex-1 items-center text-sm text-muted-foreground">
-        Opacity
-      </div>
-      <div
-        className="w-32"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 80px"
-        }}
-      >
-        <Input
-          max={100}
-          className="h-8 w-11 px-2 text-center text-sm"
-          type="number"
-          onChange={(e) => {
-            const newValue = Number(e.target.value);
-            if (newValue >= 0 && newValue <= 100) {
-              setLocalValue(newValue); // Update local state
-              onChange(newValue); // Optionally propagate immediately, or adjust as needed
-            }
-          }}
-          value={localValue} // Use local state for input value
-        />
-        <Slider
-          id="opacity"
-          value={[localValue]} // Use local state for slider value
-          onValueChange={(e) => {
-            setLocalValue(e[0]); // Update local state
-          }}
-          onValueCommit={() => {
-            onChange(localValue); // Propagate value to parent when user commits change
-          }}
+    <div className="flex flex-col gap-0.5">
+      <Label className="text-xs text-muted-foreground">Opacity</Label>
+      <div className="flex items-center gap-2">
+        <div className="relative w-16 shrink-0">
+          <Input
+            type="number"
+            className="h-7 text-xs pr-5"
+            value={editing ?? String(Math.round(value))}
+            min={0}
+            max={100}
+            step={1}
+            onChange={(e) => setEditing(e.target.value)}
+            onFocus={() => setEditing(String(Math.round(value)))}
+            onBlur={(e) => commit(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") commit(editing ?? String(value)); }}
+          />
+          <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[9px] text-muted-foreground pointer-events-none select-none">%</span>
+        </div>
+        <input
+          type="range"
+          className="flex-1 h-1.5 accent-white cursor-pointer"
           min={0}
           max={100}
           step={1}
-          aria-label="Opacity"
+          value={value}
+          onChange={(e) => onChange(parseFloat(e.target.value))}
         />
       </div>
     </div>

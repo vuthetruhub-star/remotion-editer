@@ -1,21 +1,545 @@
-{
-	"$schema": "https://ui.shadcn.com/schema.json",
-	"style": "new-york",
-	"rsc": true,
-	"tsx": true,
-	"tailwind": {
-		"config": "",
-		"css": "src/app/globals.css",
-		"baseColor": "zinc",
-		"cssVariables": true,
-		"prefix": ""
-	},
-	"aliases": {
-		"components": "@/components",
-		"utils": "@/lib/utils",
-		"ui": "@/components/ui",
-		"lib": "@/lib",
-		"hooks": "@/hooks"
-	},
-	"iconLibrary": "lucide"
-}
+import {
+  useCurrentFrame,
+  interpolate,
+  Easing,
+  AbsoluteFill,
+} from "remotion";
+import { colors, fonts, radii } from "./brand";
+
+// ─── TIMING MAP — 150f = 5s @ 30fps ──────────────────────────────────────────
+// f0   background glow on
+// f5   folder entry scale+fade in
+// f30  lid opens, cards start popping
+// f35  card 0 album art pops up
+// f39  card 1 album art pops up
+// f43  card 2 album art pops up
+// f60  text "make money from spotify" blur-reveals
+// f90  360° spin starts + card flip album→money (staggered)
+// f135 spin ends, breathe hold
+// f150 scene end
+
+const T = {
+  folderEntry:   [5,  22] as const,
+  lidOpen:       [30, 60] as const,
+  cardBase:      35,
+  cardStagger:   4,
+  textReveal:    [60, 72] as const,
+  spinStart:     90,
+  spinEnd:       135,
+  flipStart:     90,
+  flipDuration:  25,
+  flipStagger:   8,
+};
+
+// ─── ALBUM COLOURS ────────────────────────────────────────────────────────────
+const ALBUM_COLORS = [
+  { bg: "linear-gradient(135deg, #8B1A1A 0%, #C41E3A 100%)" },
+  { bg: "linear-gradient(135deg, #1A3A6B 0%, #2563EB 100%)" },
+  { bg: "linear-gradient(135deg, #4A1D6B 0%, #7C3AED 100%)" },
+];
+
+// ─── FOLDER CARD — album art that flips into a dollar bill ───────────────────
+const FolderCard: React.FC<{ index: number; rotateZ?: number }> = ({
+  index,
+  rotateZ = 0,
+}) => {
+  const frame = useCurrentFrame();
+
+  // — POP UP (phase 2) —
+  const popDelay = T.cardBase + index * T.cardStagger;
+  const popProgress = interpolate(frame, [popDelay, popDelay + 14], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+    easing: Easing.out(Easing.cubic),
+  });
+  const popScale   = interpolate(popProgress, [0, 1], [0.28, 1]);
+  const popY       = interpolate(popProgress, [0, 1], [34, 0]);
+  const popOpacity = interpolate(popProgress, [0, 0.2, 1], [0, 1, 1]);
+
+  // Gentle breathe once revealed
+  const breatheY =
+    popProgress >= 1
+      ? 2.5 * Math.sin(((frame - popDelay - 14) / 44) * Math.PI)
+      : 0;
+
+  // — CARD FLIP (phase 3.5) — album side → money side —
+  // Each card flips with a stagger so they flip one after the other
+  const flipDelay    = T.flipStart + index * T.flipStagger;
+  const flipProgress = interpolate(
+    frame,
+    [flipDelay, flipDelay + T.flipDuration],
+    [0, 1],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: Easing.inOut(Easing.cubic) }
+  );
+
+  // scaleX = |cos(angle)| — collapses to 0 at 90°, then expands with money face
+  const flipDeg    = flipProgress * 180;
+  const flipScaleX = Math.abs(Math.cos((flipDeg * Math.PI) / 180));
+  const isMoney    = flipDeg >= 90;
+
+  const album = ALBUM_COLORS[index];
+
+  return (
+    <div
+      style={{
+        opacity: popOpacity,
+        transform: `translateY(${popY + breatheY}px) scale(${popScale}) rotateZ(${rotateZ}deg)`,
+        width: 88,
+        height: 88,
+        flexShrink: 0,
+      }}
+    >
+      {/* Flip wrapper — scaleX animates collapse→expand */}
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          transform: `scaleX(${flipScaleX})`,
+          borderRadius: radii.lg,
+          overflow: "hidden",
+          boxShadow: "0 8px 28px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)",
+        }}
+      >
+        {!isMoney ? (
+          /* ── ALBUM ART FACE ─────────────────────────────────────────────── */
+          <div
+            style={{
+              width: "100%",
+              height: "100%",
+              background: album.bg,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 5,
+            }}
+          >
+            {/* Vinyl disc */}
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: radii.full,
+                background: "rgba(0,0,0,0.35)",
+                border: "1.5px solid rgba(255,255,255,0.15)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <div
+                style={{
+                  width: 12,
+                  height: 12,
+                  borderRadius: radii.full,
+                  background: "rgba(255,255,255,0.18)",
+                }}
+              />
+            </div>
+            {/* Track title bars */}
+            <div style={{ width: 50, height: 3, borderRadius: 2, background: "rgba(255,255,255,0.2)" }} />
+            <div style={{ width: 34, height: 2, borderRadius: 2, background: "rgba(255,255,255,0.11)" }} />
+          </div>
+        ) : (
+          /* ── MONEY FACE ─────────────────────────────────────────────────── */
+          <div
+            style={{
+              width: "100%",
+              height: "100%",
+              background: "linear-gradient(135deg, #1E5C1E 0%, #145214 50%, #0A3B0A 100%)",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              position: "relative",
+              overflow: "hidden",
+            }}
+          >
+            {/* Subtle crosshatch pattern */}
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                backgroundImage:
+                  "repeating-linear-gradient(45deg, rgba(0,255,65,0.03) 0px, rgba(0,255,65,0.03) 1px, transparent 1px, transparent 8px)",
+              }}
+            />
+            {/* Inner bill frame */}
+            <div
+              style={{
+                position: "absolute",
+                inset: 5,
+                border: "0.5px solid rgba(0,255,65,0.18)",
+                borderRadius: radii.md,
+              }}
+            />
+            {/* $ symbol */}
+            <span
+              style={{
+                fontFamily: fonts.mono,
+                fontSize: 28,
+                fontWeight: fonts.weights.bold,
+                color: "rgba(0,255,65,0.95)",
+                textShadow: "0 0 16px rgba(0,255,65,0.5)",
+                lineHeight: 1,
+                position: "relative",
+              }}
+            >
+              $
+            </span>
+            {/* Denomination */}
+            <span
+              style={{
+                fontFamily: fonts.mono,
+                fontSize: 8,
+                fontWeight: fonts.weights.medium,
+                color: "rgba(0,255,65,0.42)",
+                letterSpacing: "0.1em",
+                marginTop: 2,
+                position: "relative",
+              }}
+            >
+              100
+            </span>
+            {/* Corner accent dots */}
+            <div style={{ position: "absolute", top: 8, left: 8, width: 4, height: 4, borderRadius: radii.full, background: "rgba(0,255,65,0.22)" }} />
+            <div style={{ position: "absolute", bottom: 8, right: 8, width: 4, height: 4, borderRadius: radii.full, background: "rgba(0,255,65,0.22)" }} />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ─── FOLDER LID ───────────────────────────────────────────────────────────────
+const FolderLid: React.FC<{ openProgress: number }> = ({ openProgress }) => {
+  const lidRotateX = interpolate(openProgress, [0, 1], [0, -44]);
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        width: "100%",
+        transformOrigin: "bottom center",
+        transform: `perspective(700px) rotateX(${lidRotateX}deg)`,
+      }}
+    >
+      {/* Tab nub */}
+      <div
+        style={{
+          position: "absolute",
+          top: -20,
+          left: 18,
+          width: 72,
+          height: 24,
+          borderRadius: "8px 8px 0 0",
+          background: "rgba(0,190,60,0.65)",
+          border: "1.5px solid rgba(0,255,65,0.28)",
+          borderBottom: "none",
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.1)",
+        }}
+      />
+      {/* Lid face */}
+      <div
+        style={{
+          width: "100%",
+          height: 68,
+          borderRadius: "14px 14px 0 0",
+          background: "linear-gradient(180deg, rgba(0,215,68,0.82) 0%, rgba(0,168,54,0.72) 100%)",
+          border: "1.5px solid rgba(0,255,65,0.38)",
+          borderBottom: "none",
+          boxShadow:
+            "inset 0 2px 0 rgba(255,255,255,0.14), inset 0 -1px 0 rgba(0,0,0,0.18)",
+        }}
+      />
+    </div>
+  );
+};
+
+// ─── SPOTIFY BADGE ────────────────────────────────────────────────────────────
+const SpotifyBadge: React.FC = () => (
+  <div
+    style={{
+      position: "absolute",
+      bottom: 10,
+      left: 12,
+      display: "flex",
+      alignItems: "center",
+      gap: 5,
+    }}
+  >
+    <div
+      style={{
+        width: 16,
+        height: 16,
+        borderRadius: radii.full,
+        background: colors.primary,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0,
+      }}
+    >
+      <div
+        style={{
+          width: 8,
+          height: 1.5,
+          background: colors.background,
+          borderRadius: 1,
+          boxShadow: `0 -2.5px 0 ${colors.background}, 0 2.5px 0 ${colors.background}`,
+        }}
+      />
+    </div>
+    <span
+      style={{
+        fontFamily: fonts.mono,
+        fontSize: 8,
+        fontWeight: fonts.weights.medium,
+        color: "rgba(0,255,65,0.6)",
+        letterSpacing: "0.08em",
+      }}
+    >
+      spotify
+    </span>
+  </div>
+);
+
+// ─── ARROW ICON ───────────────────────────────────────────────────────────────
+const ArrowIcon: React.FC<{ frame: number }> = ({ frame }) => {
+  const entryOpacity = interpolate(frame, [8, 22], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  // Hide while spinning, re-appear after
+  const spinOpacity = interpolate(frame, [86, 90, 135, 141], [1, 0, 0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const floatY = 4 * Math.sin((frame / 44) * Math.PI);
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        bottom: -52,
+        right: -28,
+        opacity: entryOpacity * spinOpacity,
+        transform: `translateY(${floatY}px)`,
+      }}
+    >
+      <div
+        style={{
+          width: 0,
+          height: 0,
+          borderLeft: "13px solid transparent",
+          borderRight: "13px solid transparent",
+          borderBottom: `24px solid ${colors.primary}`,
+          filter: `drop-shadow(0 0 10px rgba(0,255,65,0.55))`,
+          transform: "rotate(18deg)",
+        }}
+      />
+    </div>
+  );
+};
+
+// ─── TEXT ABOVE FOLDER ────────────────────────────────────────────────────────
+const FolderText: React.FC = () => {
+  const frame = useCurrentFrame();
+
+  const opacity = interpolate(frame, T.textReveal, [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const y = interpolate(frame, T.textReveal, [14, 0], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+    easing: Easing.out(Easing.cubic),
+  });
+  const blur = interpolate(
+    frame,
+    [T.textReveal[0], T.textReveal[0] + 18],
+    [7, 0],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
+  );
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        top: -110,
+        left: "50%",
+        transform: `translateX(-50%) translateY(${y}px)`,
+        opacity,
+        filter: `blur(${blur}px)`,
+        textAlign: "center",
+        whiteSpace: "nowrap",
+        pointerEvents: "none",
+      }}
+    >
+      <div
+        style={{
+          fontFamily: fonts.heading,
+          fontSize: 30,
+          fontWeight: fonts.weights.heavy,
+          color: "rgba(200,230,200,0.52)",
+          letterSpacing: "-0.025em",
+          lineHeight: 1,
+        }}
+      >
+        make money from spotify
+      </div>
+      <div
+        style={{
+          fontFamily: fonts.mono,
+          fontSize: 11,
+          fontWeight: fonts.weights.regular,
+          color: colors.text.muted,
+          marginTop: 7,
+          letterSpacing: "0.05em",
+        }}
+      >
+        But it&apos;s greater when you actually can
+      </div>
+    </div>
+  );
+};
+
+// ─── BACKGROUND GLOW ──────────────────────────────────────────────────────────
+const BackgroundGlow: React.FC<{ frame: number }> = ({ frame }) => {
+  const breathe = 0.15 + 0.04 * Math.sin((frame / 58) * Math.PI);
+  // Boost during spin
+  const spinBoost = interpolate(frame, [90, 112, 135], [0, 0.1, 0], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+
+  return (
+    <AbsoluteFill
+      style={{
+        background: `radial-gradient(ellipse 58% 52% at 50% 52%, rgba(0,185,55,${breathe + spinBoost}) 0%, rgba(0,70,18,0.06) 55%, transparent 78%)`,
+      }}
+    />
+  );
+};
+
+// ─── FOLDER ASSEMBLY — entire unit that spins together ────────────────────────
+const FolderAssembly: React.FC = () => {
+  const frame = useCurrentFrame();
+
+  // Entry
+  const entryScale = interpolate(frame, T.folderEntry, [0.85, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+    easing: Easing.out(Easing.cubic),
+  });
+  const entryOpacity = interpolate(
+    frame,
+    [T.folderEntry[0], T.folderEntry[0] + 12],
+    [0, 1],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
+  );
+
+  // Lid open progress → slight forward tilt
+  const openProgress = interpolate(frame, T.lidOpen, [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+    easing: Easing.out(Easing.cubic),
+  });
+  const tiltX = interpolate(openProgress, [0, 1], [2, -12]);
+
+  // 360° Y-axis spin (f90→f135)
+  const spinDeg = interpolate(frame, [T.spinStart, T.spinEnd], [0, 360], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+    easing: Easing.inOut(Easing.cubic),
+  });
+
+  // Post-spin breathe
+  const postSpin = Math.max(0, frame - T.spinEnd);
+  const breatheScale = 1 + 0.012 * Math.sin((postSpin / 48) * Math.PI);
+
+  return (
+    <div
+      style={{
+        opacity: entryOpacity,
+        transform: `scale(${entryScale * breatheScale * 1.2}) perspective(900px) rotateY(${spinDeg}deg) rotateX(${tiltX}deg)`,
+        transformStyle: "preserve-3d",
+        position: "relative",
+        width: 240,
+        height: 200,
+      }}
+    >
+      {/* ── Folder body ── */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          width: "100%",
+          height: 158,
+          borderRadius: "0 0 16px 16px",
+          background:
+            "linear-gradient(180deg, rgba(0,188,60,0.78) 0%, rgba(0,148,46,0.68) 55%, rgba(0,102,33,0.73) 100%)",
+          border: "1.5px solid rgba(0,255,65,0.32)",
+          borderTop: "none",
+          boxShadow:
+            "0 18px 55px rgba(0,0,0,0.52), inset 0 -2px 0 rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.09)",
+          overflow: "hidden",
+        }}
+      >
+        <SpotifyBadge />
+
+        {/* Cards — mount once lid starts moving */}
+        {openProgress > 0 && (
+          <div
+            style={{
+              position: "absolute",
+              top: -22,
+              left: "50%",
+              transform: "translateX(-50%)",
+              display: "flex",
+              gap: 10,
+              alignItems: "flex-end",
+            }}
+          >
+            <FolderCard index={0} rotateZ={-9} />
+            <FolderCard index={1} rotateZ={1} />
+            <FolderCard index={2} rotateZ={8} />
+          </div>
+        )}
+      </div>
+
+      {/* ── Lid (renders above body) ── */}
+      <div style={{ position: "absolute", top: 28, left: 0, width: "100%" }}>
+        <FolderLid openProgress={openProgress} />
+      </div>
+
+      {/* ── Text reveal above folder ── */}
+      <FolderText />
+
+      {/* ── Arrow icon ── */}
+      <ArrowIcon frame={frame} />
+    </div>
+  );
+};
+
+// ─── ROOT EXPORT ──────────────────────────────────────────────────────────────
+export const MyComposition: React.FC = () => {
+  const frame = useCurrentFrame();
+
+  return (
+    <AbsoluteFill
+      style={{
+        background: colors.background,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <BackgroundGlow frame={frame} />
+      <FolderAssembly />
+    </AbsoluteFill>
+  );
+};

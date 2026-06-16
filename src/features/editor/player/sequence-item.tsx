@@ -18,6 +18,7 @@ import {
 import {
   Audio,
   Caption,
+  MotionScene,
   HillAudioBars,
   Illustration,
   Image,
@@ -55,5 +56,7 @@ export const SequenceItem: Record<
   progressFrame: (item, options) =>
     ProgressFrame({ item: item as IProgressFrame, options }),
   radialAudioBars: (item, options) =>
-    RadialAudioBars({ item: item as IRadialAudioBars, options })
+    RadialAudioBars({ item: item as IRadialAudioBars, options }),
+  motionScene: (item, options) =>
+    MotionScene({ item, options }),
 };

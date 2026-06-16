@@ -1,15 +1,19 @@
-export const download = (url: string, filename: string) => {
-  fetch(url)
-    .then((response) => response.blob())
+export const download = (url: string, filename: string): Promise<void> => {
+  // Strip any .mp4 suffix the caller may have included to avoid double extension.
+  const base = filename.replace(/\.mp4$/i, "");
+  return fetch(url)
+    .then((response) => {
+      if (!response.ok) throw new Error(`Failed to fetch file (${response.status})`);
+      return response.blob();
+    })
     .then((blob) => {
-      const url = window.URL.createObjectURL(blob);
+      const objectUrl = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `${filename}.mp4`); // Specify the filename for the downloaded video
+      link.href = objectUrl;
+      link.setAttribute("download", `${base}.mp4`);
       document.body.appendChild(link);
       link.click();
       link.parentNode?.removeChild(link);
-      window.URL.revokeObjectURL(url);
-    })
-    .catch((error) => console.error("Download error:", error));
+      window.URL.revokeObjectURL(objectUrl);
+    });
 };

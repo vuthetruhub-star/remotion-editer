@@ -1,105 +1,76 @@
 import { NextResponse } from "next/server";
 
-export async function POST(request: Request) {
-  try {
-    const body = await request.json(); // Parse the request body
+const COMBO_SK = process.env.COMBO_SK;
 
-    // Step 1: Create project using the new API
-    const projectResponse = await fetch(
-      "https://api.designcombo.dev/v1/projects",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.COMBO_SK}`
-        },
-        body: JSON.stringify(body)
-      }
-    );
+function missingKey() {
+  return NextResponse.json(
+    { message: "COMBO_SK is not configured. Add your DesignCombo secret key to .env.local." },
+    { status: 500 }
+  );
+}
+
+/** Safely parse JSON from a Response; returns null if the body is not JSON. */
+async function safeJson(res: Response): Promise<Record<string, unknown> | null> {
+  try { return await res.json(); } catch { return null; }
+}
+
+export async function POST(request: Request) {
+  if (!COMBO_SK || COMBO_SK === "your_combo_secret_key_here") return missingKey();
+
+  try {
+    const body = await request.json();
+
+    // Step 1: Create project
+    const projectResponse = await fetch("https://api.designcombo.dev/v1/projects", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${COMBO_SK}`,
+      },
+      body: JSON.stringify(body),
+    });
 
     if (!projectResponse.ok) {
-      const projectError = await projectResponse.json();
-      return NextResponse.json(
-        { message: projectError?.message || "Failed to create project" },
-        { status: projectResponse.status }
-      );
+      const err = await safeJson(projectResponse);
+      const msg = (err?.message as string) || `DesignCombo error (${projectResponse.status})`;
+      console.error("[render POST] project creation failed:", projectResponse.status, err);
+      return NextResponse.json({ message: msg }, { status: projectResponse.status });
     }
 
-    const projectData = await projectResponse.json();
-    const projectId = projectData.project.id;
-    console.log("Project created:", projectId);
+    const projectData = await safeJson(projectResponse);
+    const projectId = (projectData as any)?.project?.id;
+    if (!projectId) {
+      console.error("[render POST] no projectId in response:", projectData);
+      return NextResponse.json({ message: "No project ID returned from DesignCombo." }, { status: 502 });
+    }
 
-    // Step 2: Initialize export
+    // Step 2: Start export
     const exportResponse = await fetch(
       `https://api.designcombo.dev/v1/projects/${projectId}/export`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.COMBO_SK}`
-        }
+          Authorization: `Bearer ${COMBO_SK}`,
+        },
       }
     );
 
     if (!exportResponse.ok) {
-      const exportError = await exportResponse.json();
-      return NextResponse.json(
-        { message: exportError?.message || "Failed to initialize export" },
-        { status: exportResponse.status }
-      );
+      const err = await safeJson(exportResponse);
+      const msg = (err?.message as string) || `Export init failed (${exportResponse.status})`;
+      console.error("[render POST] export init failed:", exportResponse.status, err);
+      return NextResponse.json({ message: msg }, { status: exportResponse.status });
     }
 
-    const exportData = await exportResponse.json();
-    console.log("Export initialized:", exportData);
-
-    // Return the export data with the render ID for status checking
+    const exportData = await safeJson(exportResponse);
+    console.log("[render POST] export started:", exportData);
     return NextResponse.json(exportData, { status: 200 });
+
   } catch (error) {
-    console.error(error);
+    console.error("[render POST] unexpected error:", error);
     return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
-  }
-}
-
-export async function GET(request: Request) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const type = searchParams.get("type");
-    const id = searchParams.get("id");
-    if (!id) {
-      return NextResponse.json(
-        { message: "id parameter is required" },
-        { status: 400 }
-      );
-    }
-    if (!type) {
-      return NextResponse.json(
-        { message: "type parameter is required" },
-        { status: 400 }
-      );
-    }
-
-    const response = await fetch(`https://api.combo.sh/v1/render/${id}`, {
-      headers: {
-        Authorization: `Bearer ${process.env.COMBO_SH_JWT}` // JWT Token from environment
-      }
-    });
-
-    if (!response.ok) {
-      return NextResponse.json(
-        { message: "Failed to fetch export status" },
-        { status: response.status }
-      );
-    }
-
-    const statusData = await response.json();
-    return NextResponse.json(statusData, { status: 200 });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { message: "Internal server error" },
+      { message: error instanceof Error ? error.message : "Unexpected server error" },
       { status: 500 }
     );
   }

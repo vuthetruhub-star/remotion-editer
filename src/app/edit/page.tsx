@@ -1,5 +1,5 @@
-import Editor from "@/features/editor";
+import EditorClient from "./editor-client";
 
 export default function Page() {
-  return <Editor />;
+  return <EditorClient />;
 }

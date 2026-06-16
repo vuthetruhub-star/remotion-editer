@@ -13,6 +13,7 @@ import BasicImage from "./basic-image";
 import BasicVideo from "./basic-video";
 import BasicAudio from "./basic-audio";
 import BasicCaption from "./basic-caption";
+import BasicMotionScene from "./basic-motion-scene";
 import { MenuItem } from "../menu-item";
 import useStore from "../store/use-store";
 import useLayoutStore from "../store/use-layout-store";
@@ -35,7 +36,8 @@ const ActiveControlItem = ({
           ),
           image: <BasicImage trackItem={trackItem as ITrackItem & IImage} />,
           video: <BasicVideo trackItem={trackItem as ITrackItem & IVideo} />,
-          audio: <BasicAudio trackItem={trackItem as ITrackItem & IAudio} />
+          audio: <BasicAudio trackItem={trackItem as ITrackItem & IAudio} />,
+          motionScene: <BasicMotionScene trackItem={trackItem} />
         }[trackItem.type as "text"]
       }
     </>

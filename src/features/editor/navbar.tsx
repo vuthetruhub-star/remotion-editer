@@ -11,6 +11,7 @@ import {
 import {
   ChevronDown,
   Download,
+  FilePlus,
   Keyboard,
   ProportionsIcon,
   ShareIcon
@@ -21,6 +22,9 @@ import type StateManager from "@designcombo/state";
 import { generateId } from "@designcombo/timeline";
 import type { IDesign } from "@designcombo/types";
 import { useDownloadState } from "./store/use-download-state";
+import { clearSavedDesign } from "./utils/autosave";
+import { design as mockDesign } from "./mock";
+import { DESIGN_LOAD } from "@designcombo/state";
 import DownloadProgressModal from "./download-progress-modal";
 import AutosizeInput from "@/components/ui/autosize-input";
 import { debounce } from "lodash";
@@ -60,7 +64,11 @@ export default function Navbar({
     dispatch(HISTORY_REDO);
   };
 
-  const handleCreateProject = async () => {};
+  const handleNewProject = () => {
+    if (!window.confirm("Start a new project? Unsaved changes will be lost.")) return;
+    clearSavedDesign();
+    dispatch(DESIGN_LOAD, { payload: mockDesign });
+  };
 
   // Create a debounced function for setting the project name
   const debouncedSetProjectName = useCallback(
@@ -111,6 +119,15 @@ export default function Navbar({
             size="icon"
           >
             <Icons.redo width={20} />
+          </Button>
+          <Button
+            onClick={handleNewProject}
+            className="text-muted-foreground"
+            variant="ghost"
+            size="icon"
+            title="New project"
+          >
+            <FilePlus width={18} />
           </Button>
         </div>
       </div>
@@ -167,11 +184,20 @@ export default function Navbar({
   );
 }
 
+const QUALITY_OPTIONS = [
+  { label: "1080p", scale: 1,    note: "Full HD" },
+  { label: "1440p", scale: 1.33, note: "2K" },
+  { label: "2160p", scale: 2,    note: "4K" },
+] as const;
+
 const DownloadPopover = ({ stateManager }: { stateManager: StateManager }) => {
   const isMediumScreen = useIsMediumScreen();
-  const { actions, exportType } = useDownloadState();
+  const { actions, exportType, exportScale } = useDownloadState();
   const [isExportTypeOpen, setIsExportTypeOpen] = useState(false);
+  const [isQualityOpen, setIsQualityOpen] = useState(false);
   const [open, setOpen] = useState(false);
+
+  const selectedQuality = QUALITY_OPTIONS.find((q) => q.scale === exportScale) ?? QUALITY_OPTIONS[0];
 
   const handleExport = () => {
     const data: IDesign = {
@@ -228,6 +254,27 @@ const DownloadPopover = ({ stateManager }: { stateManager: StateManager }) => {
             >
               JSON
             </div>
+          </PopoverContent>
+        </Popover>
+
+        <Popover open={isQualityOpen} onOpenChange={setIsQualityOpen}>
+          <PopoverTrigger asChild>
+            <Button className="w-full justify-between" variant="outline">
+              <div>{selectedQuality.label} <span className="text-muted-foreground text-xs">({selectedQuality.note})</span></div>
+              <ChevronDown width={16} />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="bg-background z-[251] w-[--radix-popover-trigger-width] px-2 py-2">
+            {QUALITY_OPTIONS.map((q) => (
+              <div
+                key={q.label}
+                className="flex h-7 items-center justify-between rounded-sm px-3 text-sm hover:cursor-pointer hover:bg-zinc-800"
+                onClick={() => { actions.setExportScale(q.scale); setIsQualityOpen(false); }}
+              >
+                <span>{q.label}</span>
+                <span className="text-xs text-muted-foreground">{q.note}</span>
+              </div>
+            ))}
           </PopoverContent>
         </Popover>
 

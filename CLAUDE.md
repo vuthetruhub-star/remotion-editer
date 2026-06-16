@@ -12,8 +12,10 @@ D1AGENCY brand/design system.
 
 ## Design System (always read these first)
 Before writing or styling any composition/element/control panel, read:
-- `src/brand-docs/D1A-motion.md` — D1AGENCY brand system, motion rules, color tokens, enhancement recipes
+- `src/brand-docs/BRAND.md` — color, font, spacing, radii, motion token reference
+- `src/brand-docs/D1A-motion.md` — D1AGENCY brand system, motion rules, 12 enhancement recipes
 - `src/brand-docs/D1A-motion-describe.md` — how to translate plain language motion descriptions into Remotion code
+- `src/brand-docs/EDITOR-integration.md` — **how to add a new motion asset** to the editor (composition → timeline → control panel → Zod schema)
 - `src/brand.ts` — live design tokens (import these, never hardcode values)
 
 ## Token rules
@@ -35,6 +37,34 @@ When adding or editing elements, control panels, or compositions, import from
 - Use `<Img>`, `<Video>`, `<Audio>` from remotion — not plain HTML tags.
 - Never make implementation decisions on your own — follow only explicit
   instructions, and confirm before large refactors.
+
+## Zod schema workflow (ZOD-FIRST — không làm lại)
+
+Viết Zod schema **song song** với animation, không phải sau khi hoàn thành animation.
+
+- Schema file: `src/features/editor/player/items/schemas/[name].schema.ts`
+- Mọi asset đều dùng **LayerSchema** (7 props: x, y, scale, rotate, opacity, fromFrame, durationFrames)
+- Zod **không** ảnh hưởng chất lượng Remotion — chỉ validate `item.metadata` JSON ở cửa vào
+- Chi tiết đầy đủ: `src/brand-docs/EDITOR-integration.md`
+
+## Kiến trúc layer (sibling wrappers — KHÔNG NEST)
+
+Mọi sub-layer trong composition phải là **sibling** (cùng cấp), KHÔNG phải child của layer khác.
+
+```
+scene-root (position: relative)
+  ├── background (AbsoluteFill, zIndex 0)
+  ├── layer1 (position: absolute, zIndex từ zIdxOf())
+  ├── layer2 (position: absolute, zIndex từ zIdxOf())   ← ĐÚNG
+  └── text   (position: absolute, fully independent)
+```
+
+Nếu layer này nằm trong transform div của layer khác → scale/spin bị liên kết → KHÔNG chỉnh độc lập được.
+
+## Confirm trước khi implement
+
+Khi user yêu cầu thay đổi, **phân tích và hỏi lại trước** — không implement ngay.
+Trình bày: cách tiếp cận + tradeoff + ước tính phức tạp. Chờ xác nhận.
 
 ## Known gaps / roadmap (control-item panels)
 The existing control panels in `src/features/editor/control-item/common/`
