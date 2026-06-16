@@ -453,11 +453,8 @@ const isTextLayer = (k: LayerKey): k is TextLayerKey =>
 
 type LayerSaveStack = { saves: LayerConfig[]; pos: number };
 const emptyStack = (): LayerSaveStack => ({ saves: [], pos: -1 });
-const initSaveStacks = (): Record<LayerKey, LayerSaveStack> => ({
-  background: emptyStack(), folder: emptyStack(),
-  card1: emptyStack(), card2: emptyStack(), card3: emptyStack(),
-  headline: emptyStack(), subline: emptyStack(), badge: emptyStack(),
-});
+const initSaveStacks = (): Record<LayerKey, LayerSaveStack> =>
+  Object.fromEntries(LAYER_KEYS.map((k) => [k, emptyStack()])) as Record<LayerKey, LayerSaveStack>;
 
 // ── localStorage persistence ───────────────────────────────────────────────
 const SS_KEY   = (id: string) => `d1a-saves-${id}`;
@@ -556,8 +553,10 @@ const BasicMotionScene = ({ trackItem }: { trackItem: ITrackItem }) => {
   }, [trackItem.id]);
 
   const updateTextStyle = useCallback((field: keyof LayerTextStyleConfig, value: unknown) => {
+    const al = activeLayerRef.current;
+    if (!isTextLayer(al)) return; // guard: style only applies to headline / subline
+    const layerKey = al;
     const prev = metaRef.current;
-    const layerKey = activeLayerRef.current as "headline" | "subline";
     const next = MotionSceneSchema.parse({
       ...prev,
       textStyle: {
