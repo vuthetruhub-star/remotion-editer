@@ -13,24 +13,21 @@ export type LayerType = "background" | "asset" | "text";
 
 // ── Khai báo layers của motion này ─────────────────────────────
 // Thêm / xóa / đổi tên layer ở đây → mọi thứ tự cập nhật.
-// "background" luôn phải có.
-// "text" layer sẽ tự có controls: màu, bold, align, stroke, maxWidth…
+// Luôn phải có ít nhất 1 layer type "background".
+// "text" layer tự có controls: màu, bold, align, stroke, maxWidth…
 export const LAYER_CONFIG = {
   background: { type: "background" as const, label: "Background" },
-  folder:     { type: "asset"      as const, label: "Folder"     },
-  card1:      { type: "asset"      as const, label: "Card 1"     },
-  card2:      { type: "asset"      as const, label: "Card 2"     },
-  card3:      { type: "asset"      as const, label: "Card 3"     },
-  headline:   { type: "text"       as const, label: "Text 1"     },
-  subline:    { type: "text"       as const, label: "Text 2",    defaultColor: "#78A878" },
-  badge:      { type: "asset"      as const, label: "Badge"      },
+  // Thêm layer tại đây, ví dụ:
+  // logo:     { type: "asset" as const, label: "Logo"   },
+  // title:    { type: "text"  as const, label: "Text 1" },
+  // subtitle: { type: "text"  as const, label: "Text 2", defaultColor: "#78A878" },
 } as const;
 
 // ── Nội dung mặc định cho từng text layer ──────────────────────
 // Key phải trùng với tên layer có type "text" ở trên.
 export const TEXT_DEFAULTS: Record<string, string> = {
-  headline: "make money from spotify",
-  subline:  "But it's greater when you actually can",
+  // title:    "Tiêu đề mặc định",
+  // subtitle: "Mô tả mặc định",
 };
 
 // ══════════════════════════════════════════════════════════════════
@@ -39,7 +36,6 @@ export const TEXT_DEFAULTS: Record<string, string> = {
 
 export type LayerKey = keyof typeof LAYER_CONFIG;
 
-// Derived key-set types
 export type TextLayerKey = {
   [K in LayerKey]: (typeof LAYER_CONFIG)[K] extends { type: "text" } ? K : never
 }[LayerKey];
