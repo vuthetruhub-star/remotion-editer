@@ -30,11 +30,17 @@ ln -s src/features/editor/player/items/motion-scene.tsx motion-scene.tsx
 
 Rồi khởi động editor:
 
+```powershell
+# Windows (Claude Code / PowerShell không load PATH đầy đủ — dùng lệnh này)
+& "C:\Users\Admin\AppData\Roaming\npm\pnpm.cmd" dev
+```
+
 ```bash
+# Mac / Linux
 pnpm dev
 ```
 
-Nếu 62 tests pass và `pnpm dev` chạy được → sẵn sàng. Editor tại `http://localhost:3000/edit`.
+Nếu 62 tests pass và server chạy được → sẵn sàng. Editor tại `http://localhost:3000/edit`.
 
 > **Lưu ý symlink:** File `motion-config.ts` ở thư mục gốc là symlink trỏ vào
 > `src/features/editor/motion-config.ts`. Sửa file đó là sửa thẳng bản gốc —
@@ -252,4 +258,4 @@ import { LayerSchema, LayerTextStyleSchema, DEFAULT_LAYER, zIdxOf, sanitizeZOrde
 | Port 3000 bị chiếm | App cũ chưa tắt | `pnpm dev` tự kill port qua predev script |
 | Trang trắng / editor crash | Remotion SSR conflict | `editor-client.tsx` đã fix sẵn, không cần làm gì |
 | Zod test fail | localStorage cũ không khớp schema mới | Xoá localStorage trong DevTools hoặc export JSON preset trước |
-| `pnpm: command not found` | Chưa cài pnpm | Chạy: `npm install -g pnpm` |
+| `pnpm: command not found` | pnpm cài qua npm nhưng PATH không được load khi mở shell mới | Dùng đường dẫn đầy đủ: `& "C:\Users\Admin\AppData\Roaming\npm\pnpm.cmd" dev` hoặc mở terminal thường (không qua Start-Process) |

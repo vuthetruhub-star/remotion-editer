@@ -30,7 +30,11 @@ ln -s src/features/editor/motion-config.ts motion-config.ts
 ln -s src/features/editor/player/items/motion-scene.tsx motion-scene.tsx
 ```
 
-Rồi khởi động:
+Rồi khởi động (Windows — PowerShell không tự load PATH nên dùng full path):
+```powershell
+& "C:\Users\Admin\AppData\Roaming\npm\pnpm.cmd" dev
+```
+Mac / Linux:
 ```bash
 pnpm dev
 ```
