@@ -20,9 +20,13 @@ export const LayerSchema = z.object({
   rotate:         z.number().default(0),
   opacity:        z.number().min(0).max(100).default(100),
   fromFrame:      z.number().default(0),
-  durationFrames: z.number().default(150),
-  blur:           z.number().min(0).max(20).default(0),
-  brightness:     z.number().min(0).max(200).default(100),
+  durationFrames: z.number().default(9999),
+  blur:            z.number().min(0).max(20).default(0),
+  brightness:      z.number().min(0).max(200).default(100),
+  entranceEffect:   z.string().default("fade"),
+  backgroundEffect: z.string().default("none"),
+  effectDuration:   z.number().min(0).max(120).default(0),   // 0 = use preset default
+  effectIntensity:  z.number().min(0).max(200).default(100), // 100 = normal
 });
 
 export type LayerConfig = z.infer<typeof LayerSchema>;

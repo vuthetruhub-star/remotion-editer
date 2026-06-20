@@ -1,176 +1,146 @@
-# D1A Motion — How to Describe Motion for Remotion
+# Motion Describe — Mô Tả Motion Bằng Ngôn Ngữ Thường
 
-> Use this file when you want Claude to suggest or build a motion scene.
-> Tell Claude what you want in plain language — Claude will translate it into Remotion code using `brand.ts` tokens.
-
----
-
-## How to describe a scene to Claude
-
-You don't need to write code. Just describe:
-
-1. **What appears** — text, card, number, logo, background
-2. **When it appears** — at the start, after X seconds, after another element
-3. **How it moves** — fades in, slides up, types out, counts up, pulses
-4. **How it feels** — snappy, cinematic, soft, bouncy, instant
-
-Claude will pick the right enhancement from D1A-motion.md and write the Remotion code.
+> Dùng file này khi muốn AI build motion scene.
+> Mô tả bằng tiếng Việt thường → AI dịch sang code beat-based đúng pattern.
 
 ---
 
-## Plain language → Remotion translation
+## 🔴 LUẬT CỨNG — KHÔNG BỊA, PHẢI HỎI
 
-| You say | Claude builds |
+Nếu user chưa cung cấp đủ thông tin, AI **phải hỏi trước khi viết bất kỳ dòng code nào**.
+
+**Những thứ PHẢI hỏi nếu chưa biết:**
+- TIMING: bao nhiêu beats, tên beats, start/duration từng beat
+- Animation: mỗi element chuyển động như thế nào (fade/slide/scale/bounce)
+- Màu sắc: màu nền, màu text, màu accent
+- Size: card/icon/text lớn nhỏ như thế nào
+- Spacing: khoảng cách giữa các element
+- Text content: nội dung cụ thể, fields nào user chỉnh được
+
+**Không được:**
+- Tự đặt tên TIMING key → runtime crash nếu key không tồn tại trong motion-config.ts
+- Tự bịa màu sắc, size, spacing khi không có reference và chưa hỏi user
+- Copy TIMING từ file gốc user upload nếu file đó dùng cấu trúc khác
+
+**Format hỏi đúng — hỏi một lần, đầy đủ:**
+```
+Trước khi code, cần xác nhận:
+1. TIMING: [liệt kê những gì đã biết] — còn thiếu [X, Y, Z]?
+2. Animation: [element] xuất hiện theo kiểu gì?
+3. Màu sắc: nền gì, text gì, accent gì?
+4. Size & spacing: card bao nhiêu %, khoảng cách giữa các element?
+5. Fields chỉnh được: ngoài [đã biết], còn field nào không?
+```
+
+---
+
+## 🚨 NGUỒN SỰ THẬT CHO SIZE, LAYOUT & STYLE
+
+Khi build motion, AI **phải** theo thứ tự này:
+
+```
+1. Reference image/video user gửi  → DÙNG ĐÂY. Copy y hệt: màu, size, spacing, style.
+2. Không có reference              → PHẢI HỎI user trước khi implement
+3. File code user upload           → CHỈ đọc để hiểu logic/structure, KHÔNG copy pixel values
+```
+
+**Khi có reference:**
+- Copy màu sắc chính xác từ reference — không áp D1A palette lên
+- Ước tính size theo tỷ lệ % so với canvas 1080×1920
+- Copy spacing, căn lề, bố cục từ reference
+- Copy easing feel từ reference (snappy, mượt, bouncy...)
+
+**File code user upload thường chứa:**
+- Size viết cho web 360–400px → không dùng được cho canvas 1080px
+- Logic animation → CÓ THỂ tham khảo
+- Màu sắc, icon, text content → CÓ THỂ tham khảo
+
+---
+
+## Cách mô tả scene với AI
+
+Không cần viết code. Chỉ cần nói:
+
+1. **Xuất hiện gì** — chữ, số, icon, card, background
+2. **Khi nào xuất hiện** — đầu video, sau X giây, sau element khác
+3. **Chuyển động như thế nào** — fade in, slide lên, zoom từ xa, bounce
+4. **Cảm giác như thế nào** — mạnh, nhẹ, cinematic, bouncy, snappy
+
+---
+
+## Từ mô tả → Code beat-based
+
+| Bạn nói | AI build |
 |---|---|
-| "fade in slowly" | `interpolate` opacity 0→1, ease-in-out, ~18 frames |
-| "slide up from below" | `interpolate` translateY 32→0, ease-out, ~6 frames |
-| "snap into place" | `interpolate` with `Easing.bezier(0.5, 0, 0.1, 1)`, ~4 frames |
-| "cinematic entrance" | opacity + scale 0.95→1 + translateY, ~18 frames |
-| "type out letter by letter" | Enhancement #1 — TypingReveal, 1 frame/char |
-| "boot sequence / terminal intro" | Enhancement #2 — BootSequence, 5 frame stagger |
-| "count up to a number" | Enhancement #5 — NumberTicker, 36 frames ease-out-cubic |
-| "glowing dot, breathing" | Enhancement #8 — StatusPulse, 60 frame loop |
-| "cards appear one by one" | Enhancement #10 — StaggerReveal, 2 frame stagger |
-| "scrolling status bar" | Enhancement #12 — LiveTicker, continuous scroll |
-| "scene fades into next" | `TransitionSeries` + `fade()`, 15 frame transition |
-| "scene slides to next" | `TransitionSeries` + `slide({ direction: 'from-left' })` |
+| "chữ xuất hiện mờ dần" | fade in với easing phù hợp |
+| "slide lên từ dưới" | `translateY(X * (1 - progress))` |
+| "zoom từ xa ra" | `translateZ(-800 * (1 - progress))` |
+| "bounce vào" | easing out-back |
+| "xuất hiện rồi biến mất" | progress in × progress out |
+| "số đếm từ 0 lên N" | `Math.floor(progress * N)` |
+| "nhiều thứ xuất hiện lần lượt" | stagger: delay theo index |
+| "thở — lên xuống liên tục" | `Math.sin((f / fps) * speed) * amplitude` |
+| "glow nhấp nháy 1 lần" | in × out trong window ngắn |
+| "typewriter" | `text.slice(0, Math.ceil(progress * text.length))` |
 
----
-
-## Motion feel guide
-
-Use these words when describing how something should feel:
-
-| Word | What it means in Remotion |
-|---|---|
-| **snappy** | `Easing.bezier(0.5, 0, 0.1, 1)`, short duration (~4f) |
-| **smooth** | `Easing.bezier(0.16, 1, 0.3, 1)`, medium duration (~12f) |
-| **cinematic** | `Easing.bezier(0.45, 0, 0.55, 1)`, long duration (~18–30f) |
-| **instant** | 1–2 frames, no easing needed |
-| **weighted / premium** | `spring({ damping: 200, stiffness: 100 })` |
-| **bouncy** | `Easing.bezier(0.34, 1.56, 0.64, 1)` — use sparingly |
-| **terminal / mechanical** | Typing reveal or step-based, mono font |
+> Easing cụ thể (cubic, spring, linear...) → lấy từ reference hoặc hỏi user
 
 ---
 
 ## Timing vocabulary
 
-| You say | Frames | Real time at 30fps |
-|---|---|---|
-| "instant" | 1–2f | ~33–67ms |
-| "quick" / "snappy" | 4–6f | ~133–200ms |
-| "normal" | 8–12f | ~267–400ms |
-| "slow" / "cinematic" | 18–30f | ~600ms–1s |
-| "very slow" / "epic" | 30–60f | 1–2s |
-| "after 1 second" | `from={1 * fps}` | 1s |
-| "after 2 seconds" | `from={2 * fps}` | 2s |
-| "hold for 3 seconds" | `durationInFrames={3 * fps}` | 3s |
-
----
-
-## Scene structure patterns
-
-### Pattern A — Single reveal
-One element fades/slides in at the start.
-
-```
-"Show the title, fade in over 1 second"
-→ opacity 0→1, frame [0, fps], ease-out
-```
-
-### Pattern B — Staggered entrance
-Multiple elements appear one by one.
-
-```
-"Three cards slide up, one after another"
-→ StaggerItem with index * motion.stagger delay
-```
-
-### Pattern C — Timed sequence
-Elements appear at specific moments.
-
-```
-"Logo appears first, then title after 1 second, then subtitle after 2 seconds"
-→ <Sequence from={0}> logo
-→ <Sequence from={1 * fps}> title
-→ <Sequence from={2 * fps}> subtitle
-```
-
-### Pattern D — Scene transitions
-Multiple scenes cut together.
-
-```
-"Scene A fades into Scene B"
-→ TransitionSeries + fade(), 15 frames
-
-"Scene A slides left into Scene B"
-→ TransitionSeries + slide({ direction: 'from-right' }), 20 frames
-```
-
-### Pattern E — Looping / always-on
-Elements that animate continuously.
-
-```
-"A breathing green dot in the corner"
-→ StatusPulse — loops every 60 frames
-
-"A scrolling status bar at the bottom"
-→ LiveTicker — continuous translateX
-```
-
----
-
-## D1AGENCY motion combinations per scene type
-
-Tell Claude which scene type and it will apply the right combination:
-
-| Scene type | Say this to Claude |
+| Bạn nói | Giây |
 |---|---|
-| Brand intro | "D1A brand intro scene" |
-| Metrics / stats | "D1A metrics scene with [number]" |
-| Hero with text | "D1A hero scene with [headline]" |
-| Loading / skeleton | "D1A loading state" |
-| Live dashboard | "D1A dashboard scene" |
-| Terminal boot | "D1A boot sequence scene" |
-| Scene transition | "D1A transition from [A] to [B]" |
+| "ngay lập tức" | 0.1s |
+| "nhanh" | 0.2–0.3s |
+| "bình thường" | 0.4–0.5s |
+| "chậm / cinematic" | 0.6–1.0s |
+| "rất chậm" | 1.0–2.0s |
 
 ---
 
-## What to tell Claude — template
+## Cấu trúc scene phổ biến
 
-Copy and fill in:
-
+### Pattern A — 1 element đơn
 ```
-Build a Remotion scene where:
-- Background: [color / dark / surface]
-- Main element: [text / number / logo / card]
-- Motion: [how it enters — fade, slide, type, count]
-- Feel: [snappy / cinematic / premium / terminal]
-- Timing: [how long the scene is — e.g. 3 seconds]
-- After this scene: [cuts to / fades to / nothing]
+"Chữ TITLE fade in, giữ 2 giây, fade out"
+→ Beat1: opacity = progressIn * progressOut
 ```
 
-**Example:**
+### Pattern B — Stagger nhiều items
 ```
-Build a Remotion scene where:
-- Background: D1A dark background
-- Main element: The text "Digital systems for bold brand growth."
-- Motion: Types out letter by letter, cursor blinks at the end
-- Feel: Terminal, precise
-- Timing: Scene lasts 4 seconds
-- After this scene: Fades into the next scene
+"5 card xuất hiện lần lượt, mỗi cái delay 0.2s"
+→ items.map((_, i) => progress(f, start + i * 0.2, start + i * 0.2 + 0.4))
+```
+
+### Pattern C — Counter + visual
+```
+"Số đếm từ 0 lên 18,472 trong 1.4 giây"
+→ count = Math.floor(progress * 18472)
+```
+
+### Pattern D — Reveal sequence
+```
+"Beat 1: Hook text → Beat 2: Stats → Beat 3: Finale"
+→ 3 Beat components, mỗi cái guard bằng frame range
 ```
 
 ---
 
-## Remotion technical rules (always applied)
+## Template mô tả gửi AI
 
-Claude always follows these — you don't need to mention them:
+Copy và điền vào:
 
-- No CSS transitions or CSS animations (forbidden in Remotion)
-- All animation via `useCurrentFrame()` + `interpolate()`
-- `fps` always from `useVideoConfig()` — never hardcoded
-- `<Sequence from={} durationInFrames={}>` for timing
-- Always `extrapolateLeft: 'clamp', extrapolateRight: 'clamp'`
-- Tokens from `brand.ts` — never hardcoded values
-- `premountFor={fps}` on every `<Sequence>`
+```
+Làm motion scene:
+- Tổng thời lượng: [X giây]
+- Reference: [gửi ảnh/video hoặc mô tả visual style]
+- Beat 1 (0–Xs): [mô tả — chữ gì, chuyển động ra sao, feel như nào]
+- Beat 2 (Xs–Ys): [mô tả]
+- Màu chính: [màu cụ thể hoặc "lấy từ reference"]
+- Font: [tên font hoặc "lấy từ reference"]
+```
+
+---
+
+*Motion Describe v3.0 — Reference-first · No hardcode · Ask when unsure*

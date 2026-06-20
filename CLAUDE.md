@@ -1,8 +1,7 @@
-# d1a-editor — Claude Instructions
+# Motion Editor — Claude Instructions
 
-This repo is `designcombo/react-video-editor` (Next.js video editor app with a
-built-in Remotion player, timeline, and control panels) combined with the
-D1AGENCY brand/design system.
+This repo is a Next.js video editor with a built-in Remotion player, timeline,
+and control panels.
 
 ## Nếu đây là lần đầu mở repo này (fresh clone)
 
@@ -11,7 +10,7 @@ D1AGENCY brand/design system.
 - Sơ đồ toàn bộ file quan trọng trong project
 - Lệnh chạy Zod tests để kiểm tra sức khoẻ codebase
 
-**AI có terminal access (Claude Code, Cursor…) tự cài theo thứ tự này:**
+**AI có terminal access tự cài theo thứ tự này:**
 
 ```bash
 pnpm install
@@ -30,7 +29,7 @@ ln -s src/features/editor/motion-config.ts motion-config.ts
 ln -s src/features/editor/player/items/motion-scene.tsx motion-scene.tsx
 ```
 
-Rồi khởi động (Windows — PowerShell không tự load PATH nên dùng full path):
+Khởi động (Windows — PowerShell không tự load PATH nên dùng full path):
 ```powershell
 & "C:\Users\Admin\AppData\Roaming\npm\pnpm.cmd" dev
 ```
@@ -39,9 +38,7 @@ Mac / Linux:
 pnpm dev
 ```
 
-> Symlink này cho phép user sửa `motion-config.ts` ở thư mục gốc thay vì phải
-> vào sâu `src/features/editor/`. Symlink không lên GitHub — **AI phải tự tạo
-> lại mỗi lần clone mới**, không cần hỏi user.
+> Symlink không lên GitHub — **AI phải tự tạo lại mỗi lần clone mới**, không cần hỏi user.
 
 ## Running this project
 - `pnpm install`
@@ -49,57 +46,55 @@ pnpm dev
 - This is NOT a `npx remotion studio` project — there is no separate Remotion
   CLI workflow. Remotion runs inside the editor via `@remotion/player`.
 
-## Design System (always read these first)
-Before writing or styling any composition/element/control panel, read:
-- `src/brand-docs/BRAND.md` — color, font, spacing, radii, motion token reference
-- `src/brand-docs/D1A-motion.md` — D1AGENCY brand system, motion rules, 12 enhancement recipes
-- `src/brand-docs/D1A-motion-describe.md` — how to translate plain language motion descriptions into Remotion code
-- `src/brand-docs/EDITOR-integration.md` — **how to add a new motion asset** to the editor (composition → timeline → control panel → Zod schema)
-- `src/brand.ts` — live design tokens (import these, never hardcode values)
+## Tài liệu kỹ thuật
+Trước khi viết bất kỳ composition/element/control panel nào, đọc:
+- `src/brand-docs/D1A-motion.md` — easing functions, motion pattern, beat-based rules
+- `src/brand-docs/D1A-motion-describe.md` — cách mô tả motion bằng ngôn ngữ thường
+- `src/brand-docs/EDITOR-integration.md` — **cách thêm motion asset mới** vào editor
 
-## Token rules
-When adding or editing elements, control panels, or compositions, import from
-`src/brand.ts`:
-- Colors → `colors.*`
-- Fonts → `fonts.*`
-- Spacing → `spacing.*`
-- Radii → `radii.*`
-- Motion timing → `motion.*` (all values in frames at 30fps)
+## Brand defaults — chỉ 2 thứ được giữ làm default
+- **Accent color duy nhất**: `#00FF41` — dùng làm `accentColor` default trong schema
+- **Font**: `Geist, system-ui, sans-serif` — dùng làm font mặc định
 
-## Remotion rules (apply inside player/composition code)
-- CSS transitions and CSS animations are FORBIDDEN inside Remotion
-  compositions/animated items — they will not render correctly when exported.
-- Use `useCurrentFrame()` + `interpolate()` for all frame-based animation.
-- Always get `fps` from `useVideoConfig()` — never hardcode 30.
-- Use `<Sequence from={} durationInFrames={}>` to time elements.
-- Use `staticFile()` for assets in the `public/` folder.
-- Use `<Img>`, `<Video>`, `<Audio>` from remotion — not plain HTML tags.
-- Never make implementation decisions on your own — follow only explicit
-  instructions, and confirm before large refactors.
+**Tất cả thứ khác** (màu phụ, spacing, radii, size, background) **KHÔNG được hardcode**.
+Lấy từ reference hoặc hỏi user.
 
-## Zod schema workflow (ZOD-FIRST — không làm lại)
+## Luật ưu tiên khi viết motion
 
-Viết Zod schema **song song** với animation, không phải sau khi hoàn thành animation.
+1. **Có reference (ảnh/video)** → copy y hệt: màu, kích thước card/icon/text, khoảng cách, căn lề, bố cục. Không áp style mặc định lên.
+2. **Không có reference** → **PHẢI hỏi user** trước khi implement. Hỏi đủ: màu nền, màu text, kích thước card, font size, khoảng cách giữa các asset, bố cục.
+3. **Không được bịa** bất kỳ giá trị visual nào khi không có reference và chưa hỏi user.
 
-- Schema file: `src/features/editor/player/items/schemas/[name].schema.ts`
-- Mọi asset đều dùng **LayerSchema** (9 props: x, y, scale, rotate, opacity, fromFrame, durationFrames, blur, brightness)
-- Import từ `src/features/editor/player/items/schemas/_shared.ts` — không viết lại LayerSchema
-- Zod **không** ảnh hưởng chất lượng Remotion — chỉ validate `item.metadata` JSON ở cửa vào
-- Chi tiết đầy đủ: `src/brand-docs/EDITOR-integration.md`
+## Motion Code Pattern (BEAT-BASED — bắt buộc)
 
-## Kiến trúc layer (sibling wrappers — KHÔNG NEST)
+**ĐÚNG:**
+- Truyền `{ f, data }` prop vào mọi Beat component — KHÔNG dùng `useCurrentFrame()` bên trong
+- Custom easing: `s4ei()`, `s4eo()`, `s4vis()`, `s4eb()` từ motion-config
+- Timing theo **giây** trong TIMING object (không hardcode frame)
+- `useCurrentFrame()` CHỈ trong wrapper entry point (`SceneContent`)
 
-Mọi sub-layer trong composition phải là **sibling** (cùng cấp), KHÔNG phải child của layer khác.
+**SAI:**
+- `useCurrentFrame()` bên trong Beat component
+- `interpolate()` từ Remotion trong composition
+- Tạo file schema riêng (`.schema.ts`) — schema phải nằm trong `motion-scene.tsx`
+- Animate `width`, `height`, `top`, `left`
 
+## Zod schema — LUÔN nhúng trong motion-scene.tsx
+
+- Schema Zod **luôn có** — mọi scene đều có editable fields (màu, text, icon...)
+- **KHÔNG tạo file schema riêng** — nhúng thẳng vào đầu `motion-scene.tsx`
+- Chỉ 2 file cho mỗi motion: `motion-config.ts` + `motion-scene.tsx`
+- Chi tiết: `src/brand-docs/EDITOR-integration.md`
+
+## Template files
+
+Khi tạo scene mới, dùng 2 file template đã có sẵn:
 ```
-scene-root (position: relative)
-  ├── background (AbsoluteFill, zIndex 0)
-  ├── layer1 (position: absolute, zIndex từ zIdxOf())
-  ├── layer2 (position: absolute, zIndex từ zIdxOf())   ← ĐÚNG
-  └── text   (position: absolute, fully independent)
+src/features/editor/motion-config.ts
+src/features/editor/player/items/motion-scene.tsx
 ```
 
-Nếu layer này nằm trong transform div của layer khác → scale/spin bị liên kết → KHÔNG chỉnh độc lập được.
+Điền vào các mục đánh dấu `← FILL`. Không copy giá trị từ scene cũ.
 
 ## Confirm trước khi implement
 

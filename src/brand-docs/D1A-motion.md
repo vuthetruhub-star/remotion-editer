@@ -1,576 +1,225 @@
-# D1A Motion — Remotion Design Guide
+# D1A Motion — Code Guide
 
-> Synthesized from: `claude-design.md` · `taste-skill/premium-bento` · `impeccable/motion-design` · `impeccable/layout` · `impeccable/typography` · `skill-main/emil-design-eng` · `impeccable/brand` · `motion- cho web.md`
-> All motion values in **frames at 30fps** unless noted.
-
----
-
-## 1. Brand Identity
-
-**Company:** D1AGENCY — Digital systems for bold brand growth
-**Aesthetic split:**
-- VISUAL layer → `premium-bento` (font, surfaces, modules)
-- UX layer → terminal engineering (interactions, labels, feedback)
-
-**Dials (Premium Bento defaults):**
-- `DESIGN_VARIANCE: 6` — authored asymmetry, not chaos
-- `MOTION_INTENSITY: 6` — alive but disciplined
-- `VISUAL_DENSITY: 5` — balanced, practical
+> Chỉ chứa pattern kỹ thuật. Không chứa màu sắc, spacing, radii, hay aesthetic rules.
+> Đọc `CLAUDE.md` để biết luật ưu tiên khi viết motion.
 
 ---
 
-## 2. Color Tokens
+## 1. D1A Defaults (chỉ 2)
 
-Import from `brand.ts`:
-
-```ts
-import { colors } from './brand';
-```
-
-### Dark mode (default)
-
-| Role | Token | Hex | Rule |
-|---|---|---|---|
-| Background | `colors.background` | `#080A0F` | Off-black cool tint — never pure `#000` |
-| Surface | `colors.surface` | `#0F1218` | Bento modules, panels |
-| Surface Raised | `colors.surfaceAlt` | `#161B24` | Elevated modules, modals |
-| Surface Tint | `colors.surfaceHover` | `#1A2030` | Spotlight tile, featured module |
-| Primary | `colors.primary` | `#00FF41` | CTAs, active states — never ambient decoration |
-| Accent/Hover | `colors.primaryHover` | `#33FF66` | Hover on interactive elements |
-| Text Primary | `colors.text.primary` | `#E8EDF5` | Body, headings — off-white |
-| Text Secondary | `colors.text.secondary` | `#6B7A99` | Descriptions, captions |
-| Text Mono | `colors.text.muted` | `#A8B5CC` | Monospace labels, metadata |
-| Border | `colors.border` | `#1E2535` | Bento tile borders |
-| Green Glow | `colors.glowSoft` | `rgba(0,255,65,0.08)` | Terminal UX only |
-
-**Green glow rule:** ONLY on cursor, active command, focused input, CTA hover. Never on bento modules as ambient decoration.
-
-### Bento module surface recipe
-
-```tsx
-style={{
-  background: colors.surface,         // #0F1218
-  border: `1px solid ${colors.border}`,
-  borderTop: `1px solid rgba(255,255,255,0.06)`,
-}}
-```
-
-### Spotlight tile recipe
-
-```tsx
-style={{
-  background: colors.surfaceHover,    // #1A2030
-  border: `1px solid rgba(255,255,255,0.08)`,
-}}
-```
-
----
-
-## 3. Typography
-
-Import from `brand.ts`:
-
-```ts
-import { fonts } from './brand';
-```
-
-**Font system:** Geist (display/heading/body) + Geist Mono (everything interactive)
-
-| Role | Token | Weight | Size | Used for |
-|---|---|---|---|---|
-| Display / Hero | `fonts.display` | 800 | 56–80px | Hero headline |
-| Heading H1 | `fonts.heading` | 700 | 36–48px | Section titles |
-| Heading H2 | `fonts.heading` | 600 | 28–36px | Sub-sections |
-| Heading H3 | `fonts.heading` | 600 | 20–24px | Module titles |
-| Body | `fonts.body` | 400 | 16–18px | Content |
-| Button / CTA | `fonts.mono` | 600 | 14px | All buttons use mono |
-| Label / Tag | `fonts.mono` | 400 | 12px | System labels, badges |
-| Data / Metric | `fonts.mono` | 700 | varies | All numbers — tabular-nums |
-
-**Logic:** Geist = premium visual hierarchy. Geist Mono = terminal UX layer (everything the user interacts with).
-
-**Rules from impeccable/typography:**
-- Never use Geist Mono for long-form body or heading text
-- Numbers always use `fontVariantNumeric: 'tabular-nums'`
-- Light text on dark bg: add 0.05–0.1 to line-height
-- H1 must land in 1–3 lines. 4 lines is the hard ceiling
-- Body copy max-width: ~65ch
-
----
-
-## 4. Spacing & Radii
-
-```ts
-import { spacing, radii } from './brand';
-```
-
-### Spacing scale
-
-| Token | px | Use |
+| Thứ | Giá trị | Ghi chú |
 |---|---|---|
-| `spacing.xs` | 4 | Icon gaps, inline |
-| `spacing.sm` | 8 | Tight padding, tags |
-| `spacing.mdSm` | 12 | Form element internal |
-| `spacing.md` | 16 | Default padding |
-| `spacing.lg` | 24 | Card padding, component gaps |
-| `spacing.xl` | 32 | Section internal |
-| `spacing.xxl` | 48 | Between components |
-| `spacing.xxxl` | 64 | Between sections |
+| Accent color | `#00FF41` | Dùng làm `accentColor` default trong Zod schema — user có thể override |
+| Font | `Geist, system-ui, sans-serif` | Font mặc định cho mọi text |
 
-### Radii system
-
-| Element | Token | px | Rule |
-|---|---|---|---|
-| Bento modules / cards | `radii.xl` | 12 | Premium-bento softness |
-| Section containers | `radii.lg` | 8 | Contained, premium |
-| Buttons | `radii.sm` | 4 | Terminal precision |
-| Inputs, Tags | `radii.sm` | 4 | Engineered, sharp |
-| Terminal frames | `radii.none` | 0 | Hard edge — terminal only |
-| Status dots | `radii.full` | 9999 | ONLY for live status dots |
-
-**Rule:** Pill (9999px) is reserved for live status dots only — never the default shape.
+**Tất cả giá trị khác** (màu nền, màu text, size, spacing, radii) → lấy từ reference hoặc hỏi user.
 
 ---
 
-## 5. Motion System
+## 2. Motion Pattern — Prop-Based / Beat-Based
 
-```ts
-import { motion } from './brand';
+### Kiến trúc
+
+```
+motion-config.ts    → CONFIG, TIMING, easing functions
+motion-scene.tsx    → Beat components + MotionScene + Zod schema + entry point
 ```
 
-### Duration tokens (frames at 30fps)
+### Quy tắc bất biến
 
-| Token | Frames | Real time | Use for |
-|---|---|---|---|
-| `motion.press` | 2 | ~67ms | Button click, scan burst |
-| `motion.fast` | 4 | ~133ms | Hover transitions, micro-interactions |
-| `motion.base` | 6 | ~200ms | Default enters/exits |
-| `motion.slow` | 8 | ~267ms | Exits, modals |
-| `motion.section` | 18 | ~600ms | Section / module reveals |
-| `motion.typing` | 1 | ~33ms/char | Typing reveal |
-| `motion.pulse` | 60 | 2s | Status dot cycle |
-| `motion.scan` | 72 | 2.4s | Skeleton sweep |
-
-### Easing reference
-
-From `impeccable/motion-design` + `emil-design-eng`:
-
-| Curve | Use | CSS |
-|---|---|---|
-| ease-out | Elements entering | `cubic-bezier(0.23, 1, 0.32, 1)` |
-| ease-snap | Button press, hover | `cubic-bezier(0.5, 0, 0.1, 1)` |
-| ease-in-out | State toggles | `cubic-bezier(0.77, 0, 0.175, 1)` |
-| ease-drawer | Drawer/modal slide | `cubic-bezier(0.32, 0.72, 0, 1)` |
-
-**Never use ease-in for UI animations.** It starts slow — the interface feels sluggish.
-
-### Motion decision rules (Emil design-eng)
-
-Ask before animating:
-1. **Should it animate?** — High-frequency actions (keyboard shortcuts) should NEVER animate
-2. **What is the purpose?** — Spatial consistency, state indication, feedback, preventing jarring changes
-3. **Which easing?** — Entering: ease-out. Moving on screen: ease-in-out. Constant: linear
-4. **How fast?** — UI animations stay under 300ms (9 frames). Marketing can go longer
-
-**Never animate from scale(0).** Start from `scale(0.95)` + opacity: 0.
-
-**Exit animations are faster than entrances.** Use ~75% of enter duration.
-
-### Stagger tokens
-
-| Token | Frames | Use |
-|---|---|---|
-| `motion.stagger` | 2 | Between stagger reveal items |
-| `motion.bootLine` | 5 | Between boot sequence lines |
-| `motion.moduleStagger` | 2 | 50ms between bento module reveals |
-
-Cap total stagger time: 10 items × 2 frames = 20 frames. Reduce per-item delay for larger sets.
-
----
-
-## 6. The 12 Motion Enhancements in Remotion
-
-Translated from `motion- cho web.md` into Remotion frame-based code.
-
-### Which enhancements per scene type
-
-| Scene type | Enhancements |
+| ✅ ĐÚNG | ❌ SAI |
 |---|---|
-| Intro / brand reveal | #1 Typing + #2 Boot + #8 Pulse |
-| Stats / metrics | #5 Number ticker + #10 Stagger |
-| Hero atmospheric | #3 Scanline + #8 Pulse + #10 Stagger |
-| Loading state | #11 Skeleton scan |
-| Footer / status | #12 Live ticker + #8 Pulse |
-| Demo / presentation | #1 Typing + #2 Boot + #6 Cursor trail |
-
-**Stack limit:** 3–5 enhancements per scene. Never #3 + #11 together.
+| Truyền `{ f, data }` vào mọi Beat component | `useCurrentFrame()` bên trong Beat |
+| `useCurrentFrame()` CHỈ trong `SceneContent` wrapper | `interpolate()` từ Remotion |
+| Timing theo **giây** trong TIMING object | Timing hardcode số frame |
+| Animate `transform` + `opacity` | Animate `width`, `height`, `top`, `left` |
+| `Math.max(0, value)` cho mọi opacity | Để opacity âm |
 
 ---
 
-### #1 Typing Reveal
-
-35ms/char = `motion.typing` (1 frame/char at 30fps)
-
-```tsx
-import { useCurrentFrame } from 'remotion';
-import { fonts, colors, motion } from './brand';
-
-export const TypingReveal = ({ text }: { text: string }) => {
-  const frame = useCurrentFrame();
-  const charsVisible = Math.floor(frame / motion.typing);
-  const visible = text.slice(0, charsVisible);
-  const done = charsVisible >= text.length;
-
-  return (
-    <span style={{ fontFamily: fonts.mono, color: colors.text.primary }}>
-      {visible}
-      <span style={{
-        opacity: done ? (Math.floor(frame / 15) % 2 === 0 ? 1 : 0) : 1,
-        color: colors.primary,
-        marginLeft: 2,
-      }}>|</span>
-    </span>
-  );
-};
-```
-
----
-
-### #2 Boot Sequence
-
-Lines appear every `motion.bootLine` frames (5f = ~167ms stagger).
-
-```tsx
-import { useCurrentFrame } from 'remotion';
-import { fonts, colors, spacing, motion } from './brand';
-
-const BOOT_LINES = [
-  '[BOOT] initializing d1agency.os...',
-  '[SYS]  loading brand modules',
-  '[ENV]  digital systems ready',
-  '▶ SYSTEM ONLINE',
-];
-
-export const BootSequence = () => {
-  const frame = useCurrentFrame();
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
-      {BOOT_LINES.map((line, i) => {
-        const delay = i * motion.bootLine;
-        const visible = frame >= delay;
-        const isOk = line.startsWith('▶');
-
-        return (
-          <div key={i} style={{
-            fontFamily: fonts.mono,
-            fontSize: fonts.sizes.sm,
-            color: isOk ? colors.primary : colors.text.secondary,
-            opacity: visible ? 1 : 0,
-            transform: `translateY(${visible ? 0 : 4}px)`,
-            textShadow: isOk ? `0 0 10px ${colors.glowSoft}` : 'none',
-          }}>
-            {line}
-          </div>
-        );
-      })}
-    </div>
-  );
-};
-```
-
----
-
-### #5 Number Ticker
-
-1200ms = 36 frames. Ease-out cubic.
-
-```tsx
-import { useCurrentFrame, interpolate, Easing } from 'remotion';
-import { fonts, colors, motion } from './brand';
-
-export const NumberTicker = ({
-  from = 0, to, prefix = '', suffix = '', startFrame = 0
-}: {
-  from?: number; to: number; prefix?: string; suffix?: string; startFrame?: number;
-}) => {
-  const frame = useCurrentFrame();
-  const duration = 36;
-  const counting = frame >= startFrame && frame < startFrame + duration;
-
-  const value = interpolate(
-    frame,
-    [startFrame, startFrame + duration],
-    [from, to],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.out(Easing.cubic) }
-  );
-
-  return (
-    <span style={{
-      fontFamily: fonts.mono,
-      fontWeight: fonts.weights.bold,
-      fontSize: fonts.sizes.xxl,
-      color: counting ? colors.primary : colors.text.primary,
-      textShadow: counting ? `0 0 12px ${colors.glowSoft}` : 'none',
-      fontVariantNumeric: 'tabular-nums',
-      transition: 'none',
-    }}>
-      {prefix}{Math.round(value).toLocaleString()}{suffix}
-    </span>
-  );
-};
-```
-
----
-
-### #8 Status Pulse
-
-2s loop = `motion.pulse` (60 frames).
-
-```tsx
-import { useCurrentFrame, interpolate } from 'remotion';
-import { colors, radii, motion } from './brand';
-
-export const StatusDot = ({ size = 8 }: { size?: number }) => {
-  const frame = useCurrentFrame();
-  const phase = frame % motion.pulse;
-
-  const opacity = interpolate(
-    phase,
-    [0, motion.pulse / 2, motion.pulse],
-    [0.6, 1, 0.6]
-  );
-
-  return (
-    <div style={{
-      width: size,
-      height: size,
-      borderRadius: radii.full,
-      background: colors.primary,
-      opacity,
-      boxShadow: `0 0 8px 2px ${colors.glowSoft}`,
-    }} />
-  );
-};
-```
-
----
-
-### #10 Stagger Reveal
-
-Items fade up one by one — 2 frame stagger = 60ms.
-
-```tsx
-import { useCurrentFrame, interpolate } from 'remotion';
-import { motion } from './brand';
-
-export const StaggerItem = ({
-  index, children, startFrame = 0,
-}: {
-  index: number; children: React.ReactNode; startFrame?: number;
-}) => {
-  const frame = useCurrentFrame();
-  const delay = startFrame + index * motion.stagger;
-  const duration = motion.base; // 6 frames
-
-  const opacity = interpolate(frame, [delay, delay + duration], [0, 1], {
-    extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
-  });
-  const y = interpolate(frame, [delay, delay + duration], [16, 0], {
-    extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
-  });
-
-  return (
-    <div style={{ opacity, transform: `translateY(${y}px)` }}>
-      {children}
-    </div>
-  );
-};
-```
-
----
-
-### #12 Live Ticker
-
-Terminal status scrolling strip.
-
-```tsx
-import { useCurrentFrame } from 'remotion';
-import { fonts, colors, spacing, motion } from './brand';
-
-const TICKER_ITEMS = [
-  { label: '[BUILD] passing', ok: true },
-  { label: '[DEPLOY] ready', ok: true },
-  { label: '[STATUS] online', ok: true },
-  { label: '[ENV] production', ok: false },
-  { label: '[UPTIME] 99.98%', ok: false },
-];
-
-const ITEM_WIDTH = 180;
-const TOTAL_WIDTH = TICKER_ITEMS.length * ITEM_WIDTH;
-
-export const LiveTicker = ({ width = 1920 }: { width?: number }) => {
-  const frame = useCurrentFrame();
-  const speed = TOTAL_WIDTH / motion.tickerDuration;
-  const x = -(frame * speed) % TOTAL_WIDTH;
-
-  return (
-    <div style={{
-      overflow: 'hidden',
-      borderTop: `1px solid ${colors.borderSubtle}`,
-      background: colors.background,
-      padding: `${spacing.sm}px 0`,
-      maskImage: 'linear-gradient(90deg, transparent, black 5%, black 95%, transparent)',
-    }}>
-      <div style={{ display: 'flex', transform: `translateX(${x}px)`, whiteSpace: 'nowrap' }}>
-        {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, i) => (
-          <span key={i} style={{
-            fontFamily: fonts.mono,
-            fontSize: fonts.sizes.xs,
-            color: item.ok ? colors.primary : colors.text.muted,
-            padding: `0 ${spacing.lg}px`,
-            letterSpacing: '0.04em',
-          }}>
-            {item.label}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-};
-```
-
----
-
-## 7. Layout Principles
-
-From `impeccable/layout` + `taste-skill/premium-bento`:
-
-### Bento module rules
-- Use **varied module spans**: micro, standard, tall, hero, banner — never identical tiles
-- Each module has one job — text, stat, preview, command demo, image
-- At least one module must break expectation through span or media treatment
-- Labels and descriptions may sit outside cards when clarity improves
-- **Never use cards inside cards**
-- Mix carded and uncarded sections to preserve rhythm
-
-### Hierarchy
-- **Squint test:** blur your eyes — can you still identify the most important element?
-- Tight grouping: 8–12px between related siblings
-- Generous separation: 48–96px between distinct sections
-- Space is structural meaning: tight = same group, medium = related, large = new chapter
-
-### Layout tools
-- Use **Flexbox for 1D** (nav, button groups, card internals)
-- Use **Grid for 2D** (page-level, bento, dashboards)
-- `repeat(auto-fit, minmax(280px, 1fr))` for breakpoint-free responsive grids
-
-### Forbidden layout patterns (from premium-bento AI tells)
-- Three equal feature boxes below the hero
-- Identical tile shells
-- Centered hero as the only idea (when DESIGN_VARIANCE ≥ 4)
-- Dashboard screenshot nobody can read
-- Generic dashboard-wall feel
-- Cards inside cards
-- Pill shape as the default (reserved for status dots only)
-
----
-
-## 8. Craft Rules (Emil Design Engineering)
-
-### Buttons
-- `scale(0.97)` on press — physical, confirms the UI is listening
-- Never animate from `scale(0)` — start from `scale(0.95)` + opacity: 0
-- `transform: scale(0.97)` on `:active`, 160ms ease-out
-
-### Popovers / modals
-- Popovers scale from their trigger — set `transform-origin` to trigger location
-- Modals always scale from center — they are not anchored to a trigger
-
-### Easing consistency
-- Entering: ease-out → starts fast, feels responsive
-- Exiting: ease-in → accelerates toward completion
-- On-screen: ease-in-out → natural movement
-- Constant motion: linear
-
-### Transitions over keyframes for dynamic UI
-- CSS transitions are interruptible — keyframes restart from zero
-- For rapidly-triggered elements (status updates, live metrics), use transitions
-
-### Performance
-- Only animate `transform` and `opacity` — these skip layout/paint
-- Never animate `top`, `left`, `width`, `height` casually
-- Keep blur/filter effects bounded to small or isolated areas
-- `will-change` only when animation is imminent — never globally
-
----
-
-## 9. Do's and Don'ts
-
-### Do
-- Use Geist for display/heading/body — premium visual hierarchy
-- Use Geist Mono for buttons, labels, inputs, metrics, data
-- Use `radii.xl` (12px) for bento modules, `radii.sm` (4px) for interactive elements
-- Add inner `border-top: 1px solid rgba(255,255,255,0.06)` on premium surfaces
-- Use weighted spring for section reveals; snappy `motion.fast` for interactions
-- Use `tabular-nums` for all numerical data
-- Restrict green glow to terminal UX moments only
-- Exit animations ~75% of enter duration
-
-### Don't
-- Never use Geist Mono for long-form body or heading text
-- Never place `colors.glowSoft` ambience on bento modules
-- Never loop terminal animations — once per scene only
-- Never clone bento tile sizes identically
-- Never use pill shape as the default
-- Never use gradient text (`background-clip: text`)
-- Never use pure `#000000` as background
-- Never use purple-blue palette
-- Never use cards inside cards
-- Never animate from `scale(0)`
-- Never use `ease-in` for UI entrances
-- Never animate `width`, `height`, `top`, `left` directly
-
----
-
-## 10. Scene Combination Matrix
-
-| Scene | Enhancements | Dials |
-|---|---|---|
-| Brand intro / splash | #2 Boot + #1 Typing + #8 Pulse | MOTION_INTENSITY: 7 |
-| Hero metrics | #5 Ticker + #10 Stagger + #8 Pulse | VISUAL_DENSITY: 6 |
-| Atmospheric section | #3 Scanline + #10 Stagger | MOTION_INTENSITY: 4 |
-| Live dashboard | #8 Pulse + #12 Ticker + #5 Ticker | VISUAL_DENSITY: 7 |
-| Feature reveal | #10 Stagger + #1 Typing | DESIGN_VARIANCE: 6 |
-| Loading state | #11 Skeleton | MOTION_INTENSITY: 3 |
-
-**Max 3–5 enhancements per scene. Never stack #3 + #11.**
-
----
-
-## 11. Quick Reference — Remotion Imports
+## 3. Easing Functions
 
 ```ts
-import { useCurrentFrame, interpolate, Easing, spring, useVideoConfig } from 'remotion';
-import { colors, fonts, spacing, radii, motion } from './brand';
-```
+export function normalize(f: number, s0: number, s1: number): number {
+  return Math.max(0, Math.min(1, (f - s0 * CONFIG.fps) / ((s1 - s0) * CONFIG.fps)));
+}
 
-### Common interpolate patterns
+function easeOutCubic(t: number): number { const t1 = t - 1; return t1*t1*t1 + 1; }
+function easeInCubic(t: number): number  { return t*t*t; }
+function easeOutBack(t: number): number  {
+  const c1 = 1.70158, c3 = c1 + 1;
+  return Math.max(0, c3*t*t*t - c1*t*t);
+}
 
-```tsx
-// Fade in over motion.base frames
-const opacity = interpolate(frame, [0, motion.base], [0, 1], { extrapolateRight: 'clamp' });
-
-// Slide up
-const y = interpolate(frame, [0, motion.section], [32, 0], { extrapolateRight: 'clamp', easing: Easing.out(Easing.cubic) });
-
-// Scale from 0.95
-const scale = interpolate(frame, [0, motion.base], [0.95, 1], { extrapolateRight: 'clamp' });
-
-// Spring (weighted, premium feel)
-const s = spring({ frame, fps: 30, config: { damping: 200, stiffness: 100 } });
+export const s4ei  = (f: number, s0: number, s1: number) => easeOutCubic(normalize(f, s0, s1));
+export const s4eo  = (f: number, s0: number, s1: number) => 1 - easeInCubic(normalize(f, s0, s1));
+export const s4eb  = (f: number, s0: number, s1: number) => Math.max(0, easeOutBack(normalize(f, s0, s1)));
+export const s4vis = (f: number, i0: number, i1: number, o0?: number, o1?: number) =>
+  Math.max(0, Math.min(s4ei(f, i0, i1), o0 != null ? s4eo(f, o0, o1!) : 1));
 ```
 
 ---
 
-*D1A Motion v1.0 — synced with `brand.ts` · `motion- cho web.md` · `claude-design.md`*
+## 4. Timing Cheat Sheet
+
+| Hiệu ứng | Công thức |
+|---|---|
+| Fade in | `s4ei(f, start, start + dur)` |
+| Fade out | `s4eo(f, start, start + dur)` |
+| Fade in → out | `s4vis(f, inStart, inEnd, outStart, outEnd)` |
+| Scale 0.9 → 1 | `0.9 + 0.1 * s4ei(f, start, end)` |
+| Slide up từ offset | `offset * (1 - s4ei(f, start, end))` |
+| Bounce in | `s4eb(f, start, end)` |
+| Typewriter + cursor | xem section 6 |
+
+---
+
+## 5. Template Files
+
+Template đã có sẵn — **không copy từ đây, dùng trực tiếp 2 file**:
+
+```
+src/features/editor/motion-config.ts
+src/features/editor/player/items/motion-scene.tsx
+```
+
+Mở 2 file đó, đọc comment hướng dẫn và điền vào.
+
+---
+
+## 6. Visual Techniques — CHỈ THAM KHẢO
+
+> ⚠️ **Phần này là kỹ thuật tham khảo, KHÔNG áp dụng mặc định.**
+>
+> Chỉ dùng khi:
+> - User không có reference VÀ yêu cầu AI tự quyết định visual
+> - User yêu cầu cụ thể liên quan đến kỹ thuật này
+>
+> Khi có reference → bỏ qua section này hoàn toàn, copy từ reference.
+> Khi áp dụng → **mọi giá trị số/màu phải hỏi user hoặc tự điều chỉnh theo taste**,
+> không copy nguyên giá trị từ ví dụ dưới đây.
+
+---
+
+### 6.1 Background với ánh sáng nhiều lớp
+
+Kỹ thuật: xếp nhiều `div` với `radial-gradient` để tạo chiều sâu và nguồn sáng.
+
+```tsx
+// Wrapper — màu base + opacity gắn với staticOp
+<div style={{ position: 'absolute', inset: 0, background: '<màu base>', opacity: staticOp }}>
+
+  {/* Mỗi div = 1 nguồn sáng. Vị trí, màu, kích thước tuỳ scene */}
+  <div style={{ position: 'absolute', inset: 0,
+    background: 'radial-gradient(ellipse <w>% <h>% at <x>% <y>%, <màu> 0%, transparent <stop>%)'
+  }}/>
+
+  {/* Grid overlay mờ — tạo texture */}
+  <div style={{ position: 'absolute', inset: 0,
+    backgroundImage: `
+      linear-gradient(<màu grid> 1px, transparent 1px),
+      linear-gradient(90deg, <màu grid> 1px, transparent 1px)
+    `,
+    backgroundSize: '<size>px <size>px',
+  }}/>
+</div>
+```
+
+Nguyên lý:
+- Nguồn sáng chính thường ở trung tâm hoặc góc nổi bật nhất
+- Màu và opacity của từng blob tạo ra mood — hỏi user nếu không có reference
+- Grid size và màu grid tuỳ scene — giá trị trong ví dụ chỉ để minh hoạ cú pháp
+
+---
+
+### 6.2 Glass / Frosted Card
+
+Kỹ thuật: kết hợp `backdropFilter` + `border` mỏng + `boxShadow` inset để tạo cảm giác kính.
+
+```tsx
+<div style={{
+  background:           '<màu nền mờ>',          // thường rgba với alpha thấp
+  backdropFilter:       'blur(<Xpx>) saturate(<Y>)',
+  WebkitBackdropFilter: 'blur(<Xpx>) saturate(<Y>)',
+  border:               '1px solid <màu viền>',   // thường rgba trắng mờ
+  boxShadow: [
+    '<inset highlight trên> inset',  // dải sáng cạnh trên — tạo cảm giác kính
+    '<drop shadow ngoài>',
+  ].join(', '),
+}}/>
+```
+
+Nguyên lý:
+- `backdropFilter blur` càng cao → kính càng mờ
+- `saturate` > 1 làm màu phía sau rực hơn khi nhìn qua kính
+- Inset shadow `0 1px 0 rgba(255,255,255,X)` ở cạnh trên tạo highlight đặc trưng của kính
+- Alpha của `background` quyết định mức độ trong suốt — hỏi user
+
+---
+
+### 6.3 SVG Icon có chiều sâu
+
+Kỹ thuật: `radialGradient` + `feGaussianBlur filter` + highlight path để tạo khối 3D.
+
+```tsx
+<svg width={size} height={size} viewBox="0 0 200 200" fill="none">
+  <defs>
+    {/* Gradient: tâm sáng góc trên-trái, tối dần góc dưới-phải → cảm giác khối */}
+    <radialGradient id="g" cx="30%" cy="28%" r="68%">
+      <stop offset="0%"   stopColor="#FFFFFF" stopOpacity="<cao>"/>
+      <stop offset="100%" stopColor={color}   stopOpacity="<thấp>"/>
+    </radialGradient>
+
+    {/* Glow filter: blur ra rồi merge lại để tạo hào quang */}
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="<X>" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  {/* Shape chính: fill mờ + stroke = outline phát sáng */}
+  {/* Highlight path: nét trắng mờ cạnh trên-trái = cạnh sáng của khối 3D */}
+</svg>
+```
+
+Nguyên lý:
+- `cx ~30%, cy ~28%` đặt tâm sáng góc trên-trái — ánh sáng cổ điển cho 3D
+- `fillOpacity` thấp (0.08–0.15) + `stroke` tạo cảm giác outline phát sáng
+- `feGaussianBlur stdDeviation` lớn hơn = glow rộng hơn — tuỳ taste
+
+---
+
+### 6.4 Typewriter với cursor nhấp nháy
+
+```tsx
+// Utility function — đặt ở đầu file, không sửa
+function tw(text: string, f: number, dur: number): string {
+  return text.slice(0, Math.ceil(Math.min(1, f / dur) * text.length));
+}
+
+// Trong scene component:
+const TW      = <số frame cho typewriter effect>;  // hỏi user hoặc tuỳ taste
+const display = tw(text, f, TW);
+const blink   = Math.floor(f / 4) % 2 === 0;      // cursor nhấp nháy mỗi 4 frame
+const cursor  = <span style={{ opacity: blink ? 1 : 0 }}>|</span>;
+
+// Render:
+<span>{display}{f < TW && display.length < text.length && cursor}</span>
+```
+
+---
+
+### 6.5 staticOp — hiện ngay, chỉ fade lúc thoát
+
+```tsx
+// Dùng khi muốn toàn bộ scene hiện ngay frame 0, chỉ fade out ở beat cuối
+const exit     = TIMING.<tênBeatCuối>;
+const staticOp = s4eo(f, exit.start, exit.start + exit.duration);
+
+// Gán vào opacity của background wrapper và từng layer:
+// opacity: staticOp * (layer.opacity / 100)
+```
+
+---
+
+*D1A Motion v5.0 — Reference-first · No hardcode · Ask when unsure*

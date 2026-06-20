@@ -1,58 +1,66 @@
-// ══════════════════════════════════════════════════════════════════
-//  motion-config.ts  —  Scene 3: AI Song Farming (330f / 11s)
+// motion-config.ts
+// ═══════════════════════════════════════════════════════════════════════════════
+// HƯỚNG DẪN ĐIỀN FILE NÀY
+// ───────────────────────────────────────────────────────────────────────────────
+// 1. CONFIG.duration  → tổng thời lượng scene tính bằng giây
+//                       Ví dụ: 3.0 | 4.5 | 3.1 (3 giây 3 frame @ 30fps)
 //
-//  Layers: background, greenOrb, sunoMockup, streamCounter,
-//          line1, line2, line3
-// ══════════════════════════════════════════════════════════════════
+// 2. TIMING           → định nghĩa các beats của scene theo giây
+//    - Đặt tên beat mô tả hành động, ví dụ: intro / reveal / hold / outro
+//    - Mỗi beat: { start: <giây bắt đầu>, duration: <giây kéo dài> }
+//    - BẮT BUỘC: beat cuối cùng phải thoả: start + duration === CONFIG.duration
+//    - Tham chiếu beat trong motion-scene.tsx bằng TIMING.<tênBeat>.start / .duration
+//
+// KHÔNG ĐIỀN / KHÔNG SỬA:
+//    ACCENT, FONT, normalize, s4ei, s4eo, s4vis, s4eb, calculateGlowIntensity
+// ═══════════════════════════════════════════════════════════════════════════════
 
-export type LayerType = "background" | "asset" | "text";
-
-// ── Thời lượng video (ms) — 1000ms = 1 giây ────────────────────
-export const DURATION_MS = 11000; // 330f @ 30fps = 11s
-
-export const LAYER_CONFIG = {
-  background:     { type: "background" as const, label: "Background" },
-  greenOrb:       { type: "asset"      as const, label: "Green Orb" },
-  sunoMockup:     { type: "asset"      as const, label: "Suno Mockup" },
-  streamCounter:  { type: "asset"      as const, label: "Stream Counter" },
-  line1:          { type: "text"       as const, label: "Line 1", defaultColor: "#EDEFEC" },
-  line2:          { type: "text"       as const, label: "Line 2", defaultColor: "#EDEFEC" },
-  line3:          { type: "text"       as const, label: "Line 3", defaultColor: "#EDEFEC" },
-} as const;
-
-export const TEXT_DEFAULTS: Record<string, string> = {
-  line1: "Create AI songs with Suno",
-  line2: "Register as artist on Spotify",
-  line3: "Get streams. Get paid.",
+export const CONFIG = {
+  fps:        30,
+  duration:   0,            // ← điền tổng giây
+  background: 'transparent',
+  width:      1080,
+  height:     1920,
 };
 
-// ══════════════════════════════════════════════════════════════════
-//  KHÔNG SỬA PHẦN DƯỚI — tự tính từ config ở trên
-// ══════════════════════════════════════════════════════════════════
+export const ACCENT = '#00FF41';
+export const FONT   = 'Geist, system-ui, sans-serif';
 
-export type LayerKey = keyof typeof LAYER_CONFIG;
+export const TIMING: Record<string, { start: number; duration: number }> = {
+  // ← điền beats của scene, ví dụ:
+  // intro:  { start: 0,   duration: 0 },
+  // hold:   { start: 0,   duration: 0 },
+  // outro:  { start: 0,   duration: 0 },  ← start + duration phải = CONFIG.duration
+};
 
-export type TextLayerKey = {
-  [K in LayerKey]: (typeof LAYER_CONFIG)[K] extends { type: "text" } ? K : never
-}[LayerKey];
+// ── EASING FUNCTIONS — không sửa ─────────────────────────────────────────────
 
-export type OrderableLayerKey = {
-  [K in LayerKey]: (typeof LAYER_CONFIG)[K] extends { type: "background" } ? never : K
-}[LayerKey];
+export function normalize(f: number, s0: number, s1: number): number {
+  return Math.max(0, Math.min(1, (f - s0 * CONFIG.fps) / ((s1 - s0) * CONFIG.fps)));
+}
 
-export const LAYER_KEYS     = Object.keys(LAYER_CONFIG) as LayerKey[];
+function easeOutCubic(t: number): number { const t1 = t - 1; return t1 * t1 * t1 + 1; }
+function easeInCubic(t: number): number  { return t * t * t; }
+function easeOutBack(t: number): number  {
+  const c1 = 1.70158, c3 = c1 + 1;
+  return Math.max(0, c3 * t * t * t - c1 * t * t);
+}
 
-export const ORDERABLE_KEYS = LAYER_KEYS.filter(
-  (k) => LAYER_CONFIG[k].type !== "background"
-) as OrderableLayerKey[];
+// s4ei  — ease-in:  0→1, xuất hiện mượt
+export function s4ei(f: number, s0: number, s1: number): number { return easeOutCubic(normalize(f, s0, s1)); }
 
-export const TEXT_LAYER_KEYS = LAYER_KEYS.filter(
-  (k) => LAYER_CONFIG[k].type === "text"
-) as TextLayerKey[];
+// s4eo  — ease-out: 1→0, biến mất mượt
+export function s4eo(f: number, s0: number, s1: number): number { return 1 - easeInCubic(normalize(f, s0, s1)); }
 
-export const LAYER_LABELS: Record<LayerKey, string> = Object.fromEntries(
-  LAYER_KEYS.map((k) => [k, LAYER_CONFIG[k].label ?? k])
-) as Record<LayerKey, string>;
+// s4eb  — ease-out-back: bounce nhẹ khi vào
+export function s4eb(f: number, s0: number, s1: number): number { return Math.max(0, easeOutBack(normalize(f, s0, s1))); }
 
-export const isTextLayerKey = (k: string): k is TextLayerKey =>
-  k in LAYER_CONFIG && LAYER_CONFIG[k as LayerKey].type === "text";
+// s4vis — visible window: vào rồi ra trong 1 lần
+export function s4vis(f: number, i0: number, i1: number, o0?: number, o1?: number): number {
+  return Math.max(0, Math.min(s4ei(f, i0, i1), o0 != null ? s4eo(f, o0, o1!) : 1));
+}
+
+export const calculateGlowIntensity = (frame: number): number => {
+  const normalized = (frame % 60) / 60;
+  return 0.2 + Math.sin(normalized * Math.PI) * 0.4;
+};

@@ -20,7 +20,7 @@ import { Label } from "@/components/ui/label";
 
 import type StateManager from "@designcombo/state";
 import { generateId } from "@designcombo/timeline";
-import type { IDesign } from "@designcombo/types";
+import type { IDesign, ITrackItem } from "@designcombo/types";
 import { useDownloadState } from "./store/use-download-state";
 import { clearSavedDesign } from "./utils/autosave";
 import { design as mockDesign } from "./mock";
@@ -200,12 +200,18 @@ const DownloadPopover = ({ stateManager }: { stateManager: StateManager }) => {
   const selectedQuality = QUALITY_OPTIONS.find((q) => q.scale === exportScale) ?? QUALITY_OPTIONS[0];
 
   const handleExport = () => {
+    const json = stateManager.toJSON();
+
+    const duration = Object.values(json.trackItemsMap).reduce(
+      (max, item) => Math.max(max, (item as ITrackItem).display?.to ?? 0),
+      0
+    );
+
     const data: IDesign = {
       id: generateId(),
-      ...stateManager.toJSON()
+      ...json,
+      duration,
     };
-
-    console.log({ data });
 
     actions.setState({ payload: data });
     actions.startExport();
