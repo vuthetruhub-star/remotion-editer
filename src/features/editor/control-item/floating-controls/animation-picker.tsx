@@ -1,16 +1,62 @@
-import { X } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ADD_ANIMATION } from "@designcombo/state";
 import { dispatch } from "@designcombo/events";
 import useStore from "../../store/use-store";
 import { Animation, presets } from "../../player/animated";
-import React, { useRef } from "react";
-import useLayoutStore from "../../store/use-layout-store";
-import useClickOutside from "../../hooks/useClickOutside";
+import React from "react";
 import { Easing } from "remotion";
 import { PresetName } from "../../player/animated/presets";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AnimationDuration } from "../common/animation-duration";
+import FloatingPanel from "./floating-panel";
+
+// Clears the animation for a given slot (in/out/loop) by writing an empty
+// composition — the render side treats an empty composition as "no animation",
+// same contract as every real preset in player/animated/presets.ts.
+export const clearAnimation = (type: "in" | "out" | "loop", activeIds: string[]) => {
+  if (!activeIds.length) {
+    console.warn("No active ID to clear the animation on.");
+    return;
+  }
+  dispatch(ADD_ANIMATION, {
+    payload: {
+      id: activeIds[0],
+      animations: {
+        [type]: { name: "None", composition: [] }
+      }
+    }
+  });
+};
+
+export const NoneButton = ({
+  type,
+  activeIds,
+  trackItemsMap
+}: {
+  type: "in" | "out" | "loop";
+  activeIds: string[];
+  trackItemsMap: any;
+}) => {
+  const currentItem = trackItemsMap?.[activeIds[0]];
+  const isSelected = currentItem?.animations?.[type]?.name === "None";
+
+  return (
+    <div
+      className={`flex cursor-pointer flex-col gap-2 text-center text-xs text-muted-foreground items-center justify-center border ${
+        isSelected ? "border-[#006239]" : ""
+      }`}
+      onClick={() => clearAnimation(type, activeIds)}
+    >
+      <div
+        style={{ width: "60px", height: "60px", borderRadius: "8px" }}
+        className="flex items-center justify-center bg-muted"
+      >
+        <span className="text-[10px] text-muted-foreground">None</span>
+      </div>
+      <div>None</div>
+    </div>
+  );
+};
 
 export const createPresetButtons = (
   filter: (key: string) => boolean,
@@ -163,24 +209,8 @@ export default function AnimationPicker({
     animationType,
     trackItemsMap
   );
-  const { setFloatingControl } = useLayoutStore();
-  const floatingRef = useRef<HTMLDivElement>(null);
-
-  useClickOutside(floatingRef as React.RefObject<HTMLElement>, () =>
-    setFloatingControl("")
-  );
   return (
-    <div
-      ref={floatingRef}
-      className="absolute left-full top-2 z-200 ml-2 w-56 bg-card p-0 border"
-    >
-      <div className="handle flex cursor-grab items-center justify-between px-4 py-3">
-        <p className="text-sm font-bold">Animations</p>
-        <div className="h-4 w-4" onClick={() => setFloatingControl("")}>
-          <X className="h-3 w-3 cursor-pointer font-extrabold text-muted-foreground" />
-        </div>
-      </div>
-
+    <FloatingPanel title="Animations">
       <Tabs defaultValue="in" className="w-full px-2">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="in">In</TabsTrigger>
@@ -190,12 +220,16 @@ export default function AnimationPicker({
 
         <TabsContent value="in">
           <ScrollArea className="h-[400px] w-full py-2">
-            <div className="grid grid-cols-3 gap-2 py-4">{presetInButtons}</div>
+            <div className="grid grid-cols-3 gap-2 py-4">
+              <NoneButton type="in" activeIds={activeIds} trackItemsMap={trackItemsMap} />
+              {presetInButtons}
+            </div>
           </ScrollArea>
         </TabsContent>
         <TabsContent value="loop">
           <ScrollArea className="h-[400px] w-full py-2">
             <div className="grid grid-cols-3 gap-2 py-4">
+              <NoneButton type="loop" activeIds={activeIds} trackItemsMap={trackItemsMap} />
               {presetLoopButtons}
             </div>
           </ScrollArea>
@@ -203,12 +237,13 @@ export default function AnimationPicker({
         <TabsContent value="out">
           <ScrollArea className="h-[400px] w-full py-2">
             <div className="grid grid-cols-3 gap-2 py-4">
+              <NoneButton type="out" activeIds={activeIds} trackItemsMap={trackItemsMap} />
               {presetOutButtons}
             </div>
           </ScrollArea>
         </TabsContent>
       </Tabs>
       <AnimationDuration />
-    </div>
+    </FloatingPanel>
   );
 }

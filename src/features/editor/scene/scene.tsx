@@ -15,7 +15,14 @@ const Scene = forwardRef<
   }
 >(({ stateManager }, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { size, trackItemIds } = useStore();
+  const { size, trackItemIds, background } = useStore();
+
+  const isTransparentBg =
+    !background || background.type !== "color" || background.value === "transparent";
+
+  const canvasBackground = isTransparentBg
+    ? "repeating-conic-gradient(#d9d9d9 0% 25%, #ffffff 0% 50%) 50% / 24px 24px"
+    : background.value;
   const { zoom, handlePinch, recalculateZoom } = useZoom(
     containerRef as React.RefObject<HTMLDivElement>,
     size
@@ -46,7 +53,7 @@ const Scene = forwardRef<
         style={{
           width: size.width,
           height: size.height,
-          background: "#000000",
+          background: canvasBackground,
           transform: `scale(${zoom})`,
           position: "absolute"
         }}

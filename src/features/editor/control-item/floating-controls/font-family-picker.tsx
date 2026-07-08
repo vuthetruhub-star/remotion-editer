@@ -1,15 +1,14 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import useDataState from "../../store/use-data-state";
-import { SearchIcon, X } from "lucide-react";
+import { SearchIcon } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import Draggable from "react-draggable";
 import useLayoutStore from "../../store/use-layout-store";
-import useClickOutside from "../../hooks/useClickOutside";
-import { ICompactFont, IFont } from "../../interfaces/editor";
+import { ICompactFont } from "../../interfaces/editor";
 import { loadFonts } from "../../utils/fonts";
 import { dispatch } from "@designcombo/events";
 import { EDIT_OBJECT } from "@designcombo/state";
 import { ITrackItem } from "@designcombo/types";
+import FloatingPanel from "./floating-panel";
 
 export const onChangeFontFamily = async (
   font: ICompactFont,
@@ -39,28 +38,14 @@ export const onChangeFontFamily = async (
 export default function FontFamilyPicker() {
   const { compactFonts } = useDataState();
   const [search, setSearch] = useState("");
-  const { setFloatingControl, trackItem } = useLayoutStore();
+  const { trackItem } = useLayoutStore();
 
   const filteredFonts = compactFonts.filter((font) =>
     font.family.toLowerCase().includes(search.toLowerCase())
   );
 
-  const floatingRef = useRef<HTMLDivElement>(null);
-  useClickOutside(floatingRef as React.RefObject<HTMLElement>, () =>
-    setFloatingControl("")
-  );
-
   return (
-    <div
-      ref={floatingRef}
-      className="absolute left-full top-2 z-200 ml-2 w-56 bg-card p-0 border"
-    >
-      <div className="handle flex cursor-grab justify-between px-2 py-4">
-        <p className="text-sm font-bold">Fonts</p>
-        <div className="h-4 w-4" onClick={() => setFloatingControl("")}>
-          <X className="h-4 w-4 cursor-pointer font-extrabold text-muted-foreground" />
-        </div>
-      </div>
+    <FloatingPanel title="Fonts">
       <div className="flex items-center p-2">
         <SearchIcon className="mr-2 h-4 w-4 shrink-0 opacity-50" />
         <input
@@ -96,6 +81,6 @@ export default function FontFamilyPicker() {
           </p>
         )}
       </ScrollArea>
-    </div>
+    </FloatingPanel>
   );
 }

@@ -1,131 +1,149 @@
-// motion-scene.tsx
+// motion-scene.tsx — TEMPLATE
 // ═══════════════════════════════════════════════════════════════════════════════
-// File này mô tả một scene cụ thể. Mỗi scene là một file mới, độc lập.
-// Cấu trúc scene (bao nhiêu layer, tên gì, layout ra sao) hoàn toàn do
-// reference hoặc yêu cầu quyết định — không lấy từ file này.
+// File này chứa: Zod schema (editable fields) + component render + editor entry.
+// Đây là 1 trong 2 file duy nhất cần sửa khi tạo motion mới (cùng với
+// motion-config.ts). Không tạo file schema riêng, không tạo file panel riêng —
+// panel tự sinh từ PANEL_SECTIONS export ở cuối file này
+// (xem control-item/basic-motion-scene.tsx — file đó KHÔNG cần sửa).
 //
-// HƯỚNG DẪN VIẾT SCENE MỚI — đọc hết trước khi code:
+// TRƯỚC KHI VIẾT — đọc:
+//   src/brand-docs/D1A-motion.md            (easing, motion pattern, beat-based rules)
+//   src/brand-docs/D1A-motion-describe.md   (cách mô tả motion bằng ngôn ngữ thường)
+//   src/brand-docs/EDITOR-integration.md    (chi tiết cách hoạt động của panel tự sinh)
 //
-// BƯỚC 1 — Xác định layers từ reference
-//   Nhìn vào reference, liệt kê những gì xuất hiện trên màn hình.
-//   Mỗi thứ = 1 layer. Đặt tên mô tả nội dung, không đặt tên theo loại kỹ thuật.
-//   Ví dụ: nếu reference có tiêu đề lớn + số liệu + logo → layers: ['headline', 'stat', 'logo']
+// LUẬT ƯU TIÊN KHI VIẾT MOTION (xem CLAUDE.md):
+//   1. Có reference (ảnh/video) → copy y hệt, không bịa giá trị visual.
+//   2. Không có reference → PHẢI hỏi user (màu nền, màu text, kích thước,
+//      khoảng cách, bố cục) trước khi implement.
 //
-// BƯỚC 2 — Đọc _shared.ts trước khi viết schema
-//   Path: src/features/editor/player/items/schemas/_shared.ts
-//   LayerSchema        → base cho mọi layer (đã có: x, y, scale, rotate, opacity, blur...)
-//   LayerTextStyleSchema → base cho text layer (đã có: color, bold, textAlign, fontSize...)
-//   Không tự thêm các prop đã có trong _shared.ts.
-//
-// BƯỚC 3 — Định nghĩa schema cho từng layer
-//   Chỉ thêm field đặc thù của layer đó (màu nền, kích thước, nội dung text...).
-//   Default của mọi field phải lấy từ reference — không tự đặt giá trị.
-//
-// BƯỚC 4 — Viết scene component
-//   Đọc toàn bộ giá trị từ data.<layer>.<field> — không hardcode trong JSX.
-//   Animation chỉ dùng transform + opacity.
-//   Easing chỉ dùng s4ei, s4eo, s4vis, s4eb từ motion-config.
-//
-// QUY TẮC BẤT BIẾN — vi phạm là scene sẽ không render đúng:
-//   ✅ useCurrentFrame() CHỈ trong SceneContent ở cuối file
-//   ✅ Beat/scene component nhận { f, data } — không gọi hook bên trong
-//   ✅ Timing tính bằng giây, tham chiếu qua TIMING.<beat>.start / .duration
-//   ✅ Mọi giá trị visual là Zod schema field, đọc từ data
-//   ❌ interpolate() từ Remotion — không dùng
-//   ❌ Animate width, height, top, left — chỉ transform + opacity
-//   ❌ Tạo file schema riêng — schema nhúng thẳng vào file này
+// 🔴 QUY TẮC CHROMA-KEY-SAFE — bắt buộc đọc trước khi viết style:
+// Composition này render trên nền chroma-key để user key ra ở app ngoài
+// (CapCut...). BẤT KỲ hiệu ứng mờ/bán trong suốt nào (box-shadow có
+// blur-radius > 0, filter: blur/drop-shadow, gradient có alpha < 1) mà vẽ RA
+// NGOÀI cạnh của phần tử NGOÀI CÙNG của cả composition đều sẽ đè lên nền
+// chroma và bị dính màu khi key. Quy tắc:
+//   ✅ Glow/shadow có blur CHỈ an toàn khi nằm HOÀN TOÀN bên trong 1 phần tử
+//      cha có nền ĐỤC 100% khác (không chạm ra tới nền chroma ngoài cùng).
+//   ✅ Cạnh NGOÀI CÙNG của cả composition chỉ được dùng box-shadow KHÔNG blur
+//      (dạng `0 0 0 Npx color`) hoặc không dùng gì cả.
+//   ❌ Không đặt box-shadow có blur-radius > 0 hoặc filter:blur/drop-shadow
+//      trên phần tử ngoài cùng bao trọn cả scene.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React from 'react';
 import { useCurrentFrame } from 'remotion';
 import { z } from 'zod';
 import { ITrackItem } from '@designcombo/types';
-import { LayerSchema, LayerTextStyleSchema, zIdxOf, sanitizeZOrder } from './schemas/_shared';
-import { ACCENT, FONT, TIMING, s4eo, s4ei, s4vis, s4eb } from '../../motion-config';
+import {
+  TextLayerSchema, TEXT_LAYER_WIDGETS,
+  AssetLayerSchema, ASSET_LAYER_WIDGETS,
+  BackgroundSchema, BACKGROUND_WIDGETS,
+} from './schemas/_shared';
+import { TIMING, s4ei, s4eo } from '../../motion-config';
 import { BaseSequence, SequenceItemOptions } from '../base-sequence';
+import type { PanelSection } from '../../control-item/auto-panel';
 
-// ── 1. LAYERS ─────────────────────────────────────────────────────────────────
-// Liệt kê tên layers dựa trên những gì có trong reference.
-// Thứ tự = z-index mặc định (phần tử sau đè lên trước).
-
-const ORDERABLE_KEYS = [
-  // ← điền tên layers từ reference
-] as const;
-
-// ── 2. ZOD SCHEMA ─────────────────────────────────────────────────────────────
-// Một schema cho mỗi layer.
-//
-// Visual layer (hình ảnh, card, nền, icon...):
-//   const XxxSchema = LayerSchema.extend({ <fields đặc thù> });
-//
-// Text layer (tiêu đề, mô tả, số liệu...):
-//   const XxxSchema = LayerSchema.merge(LayerTextStyleSchema).extend({ <fields đặc thù> });
-//
-// Field nào không có trong LayerSchema/_shared.ts thì mới thêm vào đây.
-// Default của mọi field lấy từ reference, không tự đặt.
-
-// ← viết schema từng layer ở đây
-
-
-// ── 3. TYPES & META ───────────────────────────────────────────────────────────
-
-export type MotionSceneMeta = {
-  // ← khai báo type từng layer đã định nghĩa
-  // ví dụ: headline: z.infer<typeof HeadlineSchema>;
-  accentColor: string;
-  zOrder:      string[];
-};
+// ── 1. ZOD SCHEMA ─────────────────────────────────────────────────────────────
+// ← FILL: mỗi asset trong motion phải khớp 1 trong 3 nhóm chuẩn
+// (TextLayerSchema / AssetLayerSchema / BackgroundSchema) — xem
+// src/features/editor/player/items/schemas/_shared.ts. Không tự bịa field khi
+// đã có sẵn trong 3 nhóm này.
 
 const RawSchema = z.object({
-  // ← thêm từng layer schema với .optional()
-  accentColor: z.string().optional(),
-  zOrder:      z.array(z.string()).optional(),
+  background: BackgroundSchema.partial().optional(),
+  headline:   TextLayerSchema.partial().optional(),
+  icon:       AssetLayerSchema.partial().optional(),
 });
 
-// ── 4. PARSE — không sửa pattern ─────────────────────────────────────────────
+export type MotionSceneMeta = {
+  background: z.infer<typeof BackgroundSchema>;
+  headline:   z.infer<typeof TextLayerSchema>;
+  icon:       z.infer<typeof AssetLayerSchema>;
+};
 
 const parseMotionSceneMeta = (metadata: unknown): MotionSceneMeta => {
   const raw = RawSchema.safeParse(metadata ?? {});
   const d: Partial<z.infer<typeof RawSchema>> = raw.success ? raw.data : {};
   return {
-    // ← parse từng layer: XxxSchema.parse(d.xxx ?? {})
-    accentColor: d.accentColor ?? ACCENT,
-    zOrder:      sanitizeZOrder(d.zOrder ?? [], [...ORDERABLE_KEYS], [...ORDERABLE_KEYS]),
+    background: BackgroundSchema.parse(d.background ?? {}),
+    headline:   TextLayerSchema.parse(d.headline ?? {}),
+    icon:       AssetLayerSchema.parse(d.icon ?? {}),
   };
 };
 
-// ── 5. SCENE COMPONENT ────────────────────────────────────────────────────────
-// Tên function = tên scene, mô tả nội dung (ví dụ: RevenueStats, ProductLaunch).
-// Cấu trúc JSX phản ánh layout của reference — không có cấu trúc mặc định nào.
-//
-// staticOp — pattern bắt buộc khi scene cần "hiện ngay, chỉ fade lúc thoát":
-//   const exit = TIMING.<tênBeatCuối>;
-//   const staticOp = s4eo(f, exit.start, exit.start + exit.duration);
-//   → gán staticOp vào opacity của wrapper background và mọi layer
+// ── 2. BEAT COMPONENTS ────────────────────────────────────────────────────────
+// ← FILL: viết các component con nhận { f, data } qua props — KHÔNG dùng
+// useCurrentFrame() bên trong. Timing lấy từ TIMING (giây), easing từ
+// motion-config (s4ei/s4eo/s4vis/s4eb).
 
-interface SceneProps { f: number; data: MotionSceneMeta }
+interface HeadlineProps { f: number; data: MotionSceneMeta['headline'] }
 
-export function [SceneName]({ f, data }: SceneProps) {
-  const { accentColor, zOrder } = data;
-
-  // ← tính staticOp và các animation variable từ TIMING + easing
-  // ← destructure các layer từ data
+function Headline({ f, data }: HeadlineProps) {
+  const { intro, outro } = TIMING;
+  const opacity = Math.min(s4ei(f, intro.start, intro.start + intro.duration), s4eo(f, outro.start, outro.start + outro.duration));
 
   return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
-      {/* ← render scene theo layout của reference */}
-      {/* Đọc giá trị từ data.<layer>.<field> — không hardcode */}
-      {/* zIndex: zIdxOf('<layerName>', zOrder) */}
-      {/* opacity: staticOp * (layer.opacity / 100) */}
+    <div
+      style={{
+        position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        transform: `translate(${data.x}px, ${data.y}px) scale(${data.scale}) rotate(${data.rotate}deg)`,
+        opacity,
+      }}
+    >
+      <span
+        style={{
+          fontFamily: 'Geist, system-ui, sans-serif',
+          fontWeight: data.bold ? 700 : 500,
+          fontStyle: data.italic ? 'italic' : 'normal',
+          textDecoration: data.underline ? 'underline' : 'none',
+          textTransform: data.textTransform,
+          textAlign: data.textAlign,
+          color: data.color,
+          lineHeight: data.lineHeight,
+          maxWidth: data.maxWidth || undefined,
+          fontSize: 64,
+        }}
+      >
+        {/* ← FILL: nội dung text — hoặc truyền qua field riêng trong schema nếu cần đổi qua panel */}
+        Headline
+      </span>
     </div>
   );
 }
 
-// ── 6. EDITOR ENTRY — không sửa khối này, chỉ cập nhật tên function ──────────
+// ── 3. SCENE COMPONENT ────────────────────────────────────────────────────────
+
+interface SceneProps { f: number; data: MotionSceneMeta }
+
+export function MotionSceneComponent({ f, data }: SceneProps) {
+  return (
+    <div
+      style={{
+        position: 'absolute', inset: 0, overflow: 'hidden',
+        background: data.background.color,
+      }}
+    >
+      <Headline f={f} data={data.headline} />
+    </div>
+  );
+}
+
+// ── 4. EDITOR PANEL SECTIONS ──────────────────────────────────────────────────
+// ← FILL: khai báo các nhóm field sẽ hiện trên panel chỉnh sửa. Panel tự sinh
+// (control-item/basic-motion-scene.tsx) đọc mảng này — KHÔNG viết panel tay.
+// `tabs` dùng khi 1 field lặp lại theo danh sách key (vd nhiều icon); bỏ `tabs`
+// nếu section chỉ có 1 bộ field phẳng (vd background, 1 dòng text).
+
+export const PANEL_SECTIONS: PanelSection[] = [
+  { title: 'Background', schema: BackgroundSchema, widgets: BACKGROUND_WIDGETS },
+  { title: 'Headline',   schema: TextLayerSchema,  widgets: TEXT_LAYER_WIDGETS },
+  { title: 'Icon',       schema: AssetLayerSchema, widgets: ASSET_LAYER_WIDGETS },
+];
+
+// ── 5. EDITOR ENTRY — không sửa khối này ──────────────────────────────────────
 
 function SceneContent({ data }: { data: MotionSceneMeta }) {
   const f = useCurrentFrame();
-  return <[SceneName] f={f} data={data} />;
+  return <MotionSceneComponent f={f} data={data} />;
 }
 
 export default function MotionSceneItem({

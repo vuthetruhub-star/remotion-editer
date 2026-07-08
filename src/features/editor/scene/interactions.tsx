@@ -21,6 +21,11 @@ import {
 let holdGroupPosition: Record<string, any> | null = null;
 let dragStartEnd = false;
 
+// DOM selector cho phần tử render thật của 1 track item — text và caption
+// render qua 2 cơ chế DOM khác nhau nên cần chọn khác nhau.
+const getTextOrCaptionSelector = (type: string, id: string) =>
+  type === "text" ? `[data-text-id="${id}"]` : `#caption-${id}`;
+
 interface SceneInteractionsProps {
   stateManager: StateManager;
   containerRef: React.RefObject<HTMLDivElement>;
@@ -410,8 +415,7 @@ export function SceneInteractions({
           ) {
             const type = trackItemsMap[id].type;
 
-            const selector =
-              type === "text" ? `[data-text-id="${id}"]` : `#caption-${id}`;
+            const selector = getTextOrCaptionSelector(type, id);
 
             const textEl = document.querySelector(selector) as HTMLDivElement;
 
@@ -509,47 +513,36 @@ export function SceneInteractions({
           ) {
             const type = trackItemsMap[id].type;
 
-            const selector =
-              type === "text" ? `[data-text-id="${id}"]` : `#caption-${id}`;
+            const selector = getTextOrCaptionSelector(type, id);
 
             const textEl = document.querySelector(selector) as HTMLDivElement;
 
-            const newHeight = calculateTextHeight({
+            const baseTextMetrics = {
               family: textEl!.style.fontFamily,
               fontSize: textEl!.style.fontSize,
               fontWeight: textEl!.style.fontWeight,
               letterSpacing: textEl!.style.letterSpacing,
               lineHeight: textEl!.style.lineHeight,
-              text: (textEl! as HTMLDivElement).innerHTML,
               textShadow: textEl!.style.textShadow,
               webkitTextStroke: textEl!.style.webkitTextStroke,
-              width: nextWidth + "px",
               textTransform: textEl!.style.textTransform
+            };
+
+            const newHeight = calculateTextHeight({
+              ...baseTextMetrics,
+              text: (textEl! as HTMLDivElement).innerHTML,
+              width: nextWidth + "px"
             });
 
             const validHeight = calculateTextHeight({
-              family: textEl!.style.fontFamily,
-              fontSize: textEl!.style.fontSize,
-              fontWeight: textEl!.style.fontWeight,
-              letterSpacing: textEl!.style.letterSpacing,
-              lineHeight: textEl!.style.lineHeight,
+              ...baseTextMetrics,
               text: htmlToPlainText((textEl! as HTMLDivElement).innerHTML),
-              textShadow: textEl!.style.textShadow,
-              webkitTextStroke: textEl!.style.webkitTextStroke,
-              width: nextWidth + "px",
-              textTransform: textEl!.style.textTransform
+              width: nextWidth + "px"
             });
 
             const minWidth = calculateMinWidth({
-              family: textEl!.style.fontFamily,
-              fontSize: textEl!.style.fontSize,
-              fontWeight: textEl!.style.fontWeight,
-              letterSpacing: textEl!.style.letterSpacing,
-              lineHeight: textEl!.style.lineHeight,
-              text: (textEl! as HTMLDivElement).innerText,
-              textShadow: textEl!.style.textShadow,
-              webkitTextStroke: textEl!.style.webkitTextStroke,
-              textTransform: textEl!.style.textTransform
+              ...baseTextMetrics,
+              text: (textEl! as HTMLDivElement).innerText
             });
             target.style.width = nextWidth + "px";
             target.style.minWidth = minWidth + "px";
@@ -563,8 +556,7 @@ export function SceneInteractions({
               animationDiv.style.height = `${validHeight}px`;
 
               const type = trackItemsMap[id].type;
-              const selector =
-                type === "text" ? `[data-text-id="${id}"]` : `#caption-${id}`;
+              const selector = getTextOrCaptionSelector(type, id);
 
               const textDiv = document.querySelector(
                 selector
@@ -627,10 +619,7 @@ export function SceneInteractions({
 
         const type = trackItemsMap[targetId].type;
 
-        const selector =
-          type === "text"
-            ? `[data-text-id="${targetId}"]`
-            : `#caption-${targetId}`;
+        const selector = getTextOrCaptionSelector(type, targetId);
 
         const textDiv = document.querySelector(selector) as HTMLDivElement;
 

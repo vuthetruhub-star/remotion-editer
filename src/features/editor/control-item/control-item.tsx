@@ -37,6 +37,8 @@ const ActiveControlItem = ({
           image: <BasicImage trackItem={trackItem as ITrackItem & IImage} />,
           video: <BasicVideo trackItem={trackItem as ITrackItem & IVideo} />,
           audio: <BasicAudio trackItem={trackItem as ITrackItem & IAudio} />,
+          // Loại CỐ ĐỊNH cho mọi motion — panel tự đọc PANEL_SECTIONS từ
+          // chính motion-scene.tsx, đổi ý tưởng motion không cần sửa dòng này.
           motionScene: <BasicMotionScene trackItem={trackItem} />
         }[trackItem.type as "text"]
       }

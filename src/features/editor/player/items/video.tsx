@@ -58,6 +58,10 @@ export const Video = ({
               playbackRate={playbackRate}
               src={details.src}
               volume={(details.volume ?? 100) / 100}
+              // Only .webm carries the alpha channel this app exports (see
+              // remotion-render.mjs) — forcing PNG-based decode for every
+              // video would slow down ordinary mp4 sources for no reason.
+              transparent={details.src?.endsWith(".webm")}
             />
           </div>
         </MaskAnim>

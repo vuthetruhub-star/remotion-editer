@@ -185,9 +185,11 @@ export default function Navbar({
 }
 
 const QUALITY_OPTIONS = [
-  { label: "1080p", scale: 1,    note: "Full HD" },
-  { label: "1440p", scale: 1.33, note: "2K" },
-  { label: "2160p", scale: 2,    note: "4K" },
+  { label: "1080p", scale: 1,   note: "Full HD" },
+  // 4/3 exactly, not the rounded decimal 1.33 — stitchFramesToVideo() requires
+  // integer width/height, and 1.33 * 1920 = 2553.6 (non-integer) fails the export.
+  { label: "1440p", scale: 4 / 3, note: "2K" },
+  { label: "2160p", scale: 2,   note: "4K" },
 ] as const;
 
 const DownloadPopover = ({ stateManager }: { stateManager: StateManager }) => {

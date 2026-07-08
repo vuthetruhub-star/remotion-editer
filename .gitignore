@@ -4,6 +4,9 @@
 /motion-config.ts
 /motion-scene.tsx
 
+# Local AI tool permission cache — machine-specific, not part of the template
+.claude/
+
 # Screenshots / preview images
 *.png
 

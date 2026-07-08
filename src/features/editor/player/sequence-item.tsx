@@ -18,11 +18,11 @@ import {
 import {
   Audio,
   Caption,
-  MotionScene,
   HillAudioBars,
   Illustration,
   Image,
   LinealAudioBars,
+  MotionScene,
   ProgressBar,
   ProgressFrame,
   RadialAudioBars,
@@ -57,6 +57,7 @@ export const SequenceItem: Record<
     ProgressFrame({ item: item as IProgressFrame, options }),
   radialAudioBars: (item, options) =>
     RadialAudioBars({ item: item as IRadialAudioBars, options }),
-  motionScene: (item, options) =>
-    MotionScene({ item, options }),
+  // Loại CỐ ĐỊNH cho mọi motion — nội dung thật nằm trong motion-scene.tsx,
+  // đổi ý tưởng motion không cần sửa dòng này.
+  motionScene: (item, options) => MotionScene({ item, options }),
 };

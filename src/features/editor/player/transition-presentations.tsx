@@ -13,6 +13,15 @@ import {
   wipe
 } from "@designcombo/transitions";
 import { TransitionSeries } from "@designcombo/transitions";
+import type { TransitionPresentation } from "@designcombo/transitions";
+
+// @remotion/transitions' TransitionPresentationComponentProps gained new
+// required fields (onElementImage/onUnmount/bothEnteringAndExiting) after
+// @designcombo/transitions' own compiled .d.ts was frozen against an older
+// remotion/transitions version. The presentation components (fade/slide/wipe/
+// flip/clockWipe) don't read those fields at runtime, so this is a type-only
+// mismatch between the two packages' stale type copies — safe to bridge here.
+const asPresentation = (p: unknown) => p as TransitionPresentation<any>;
 
 interface TransitionOptions {
   width: number;
@@ -29,35 +38,35 @@ export const Transitions: Record<
   none: ({ id }: TransitionOptions) => (
     <TransitionSeries.Transition
       key={id}
-      presentation={fade()}
+      presentation={asPresentation(fade())}
       timing={linearTiming({ durationInFrames: 1 })}
     />
   ),
   fade: ({ durationInFrames, id }: TransitionOptions) => (
     <TransitionSeries.Transition
       key={id}
-      presentation={fade()}
+      presentation={asPresentation(fade())}
       timing={linearTiming({ durationInFrames })}
     />
   ),
   slide: ({ durationInFrames, id, direction }: TransitionOptions) => (
     <TransitionSeries.Transition
       key={id}
-      presentation={slide({ direction: direction })}
+      presentation={asPresentation(slide({ direction: direction }))}
       timing={linearTiming({ durationInFrames })}
     />
   ),
   wipe: ({ durationInFrames, id, direction }: TransitionOptions) => (
     <TransitionSeries.Transition
       key={id}
-      presentation={wipe({ direction: direction })}
+      presentation={asPresentation(wipe({ direction: direction }))}
       timing={linearTiming({ durationInFrames })}
     />
   ),
   flip: ({ durationInFrames, id }: TransitionOptions) => (
     <TransitionSeries.Transition
       key={id}
-      presentation={flip()}
+      presentation={asPresentation(flip())}
       timing={linearTiming({ durationInFrames })}
     />
   ),
@@ -65,7 +74,7 @@ export const Transitions: Record<
   clockWipe: ({ width, height, durationInFrames, id }: TransitionOptions) => (
     <TransitionSeries.Transition
       key={id}
-      presentation={clockWipe({ width, height })}
+      presentation={asPresentation(clockWipe({ width, height }))}
       timing={linearTiming({ durationInFrames })}
     />
   ),

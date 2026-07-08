@@ -46,21 +46,6 @@ const TAGS = [
     name: "Visualizers"
   }
 ];
-const STICKERS_TAGS = [
-  {
-    id: "featured",
-    name: "Featured"
-  },
-  {
-    id: "emoji",
-    name: "Emoji"
-  },
-  {
-    id: "social",
-    name: "Social"
-  }
-];
-
 const VISUALIZERS_TAGS = [
   {
     id: "progress",
@@ -224,15 +209,7 @@ const OPTIONS_HILL_BARS = [
 ];
 
 export const Elements = () => {
-  const [selectedCategoryStickers, setSelectedCategoryStickers] = useState<
-    string | null
-  >(null);
-
   const [activeAll, setActiveAll] = useState<ActiveAllState | null>(null);
-
-  const handleCategoryStickersClick = async (categoryId: string) => {
-    setSelectedCategoryStickers(categoryId);
-  };
 
   const handleAllClick = async (type: string | null, all: string | null) => {
     setActiveAll({ type, all });

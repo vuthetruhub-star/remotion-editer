@@ -5,9 +5,9 @@ import { CircleOff } from "lucide-react";
 import {
   ICaptionsControlProps,
   NONE_PRESET,
-  STYLE_CAPTION_PRESETS,
-  getTextShadow
+  STYLE_CAPTION_PRESETS
 } from "../floating-controls/caption-preset-picker";
+import { getTextShadow } from "./text-shadow";
 
 interface PresetItemProps {
   preset: ICaptionsControlProps;

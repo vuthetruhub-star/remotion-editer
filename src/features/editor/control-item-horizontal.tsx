@@ -46,46 +46,33 @@ const ActiveControlItem = ({
   );
 };
 
-const ColorPickerControl = ({
-  trackItem
+// 1 component tham số hoá field, thay cho 8 bản *ColorPickerControl gần như
+// giống hệt nhau (chỉ khác field nào trong `details` được đọc/ghi + label).
+const GenericColorPickerControl = ({
+  trackItem,
+  label,
+  defaultValue = "#ffffff",
+  getValue,
+  buildPayload
 }: {
   trackItem?: ITrackItemAndDetails;
+  label: string;
+  defaultValue?: string;
+  getValue: (details: any) => string | undefined;
+  buildPayload: (color: string) => Record<string, any>;
 }) => {
-  const [localValue, setLocalValue] = useState<string>("#ffffff");
-  const [open, setOpen] = useState(false);
-  const isLargeScreen = useIsLargeScreen();
+  const [localValue, setLocalValue] = useState<string>(defaultValue);
 
   useEffect(() => {
-    // Get the current color from track item details based on type
-    let currentColor = "#ffffff";
-    if (trackItem?.type === "text") {
-      currentColor = trackItem.details?.color || "#ffffff";
-    } else if (trackItem?.type === "caption") {
-      currentColor = trackItem.details?.appearedColor || "#ffffff";
-    } else if (trackItem?.type === "image" || trackItem?.type === "video") {
-      currentColor = trackItem.details?.background || "#ffffff";
-    }
-    setLocalValue(currentColor);
+    setLocalValue(getValue(trackItem?.details) || defaultValue);
   }, [trackItem]);
 
   const handleColorChange = (color: string) => {
     setLocalValue(color);
-
-    // Update the appropriate property based on track item type
-    const updatePayload: any = {};
-
-    if (trackItem?.type === "text") {
-      updatePayload.color = color;
-    } else if (trackItem?.type === "caption") {
-      updatePayload.appearedColor = color;
-    } else if (trackItem?.type === "image" || trackItem?.type === "video") {
-      updatePayload.background = color;
-    }
-
     dispatch(EDIT_OBJECT, {
       payload: {
         [trackItem?.id || ""]: {
-          details: updatePayload
+          details: buildPayload(color)
         }
       }
     });
@@ -93,376 +80,7 @@ const ColorPickerControl = ({
 
   return (
     <div className="flex flex-col gap-4 p-4">
-      ß<Label className="font-sans text-xs font-semibold">Color</Label>
-      <div className="flex items-center pb-4 justify-center">
-        <ColorPicker
-          value={localValue}
-          format="hex"
-          gradient={true}
-          solid={true}
-          onChange={handleColorChange}
-          allowAddGradientStops={true}
-        />
-      </div>
-    </div>
-  );
-};
-
-const StrokeColorPickerControl = ({
-  trackItem
-}: {
-  trackItem?: ITrackItemAndDetails;
-}) => {
-  const [localValue, setLocalValue] = useState<string>("#000000");
-  const [open, setOpen] = useState(false);
-  const isLargeScreen = useIsLargeScreen();
-  const { setControItemDrawerOpen } = useLayoutStore();
-
-  useEffect(() => {
-    // Get the current border color from track item details
-    const currentBorderColor = trackItem?.details?.borderColor || "#000000";
-    setLocalValue(currentBorderColor);
-  }, [trackItem]);
-
-  const handleColorChange = (color: string) => {
-    setLocalValue(color);
-
-    // Update the border color using the dispatch system
-    dispatch(EDIT_OBJECT, {
-      payload: {
-        [trackItem?.id || ""]: {
-          details: {
-            borderColor: color
-          }
-        }
-      }
-    });
-  };
-
-  const handleClose = () => {
-    setControItemDrawerOpen(false);
-  };
-
-  return (
-    <div className="flex flex-col gap-4 p-4">
-      <Label className="font-sans text-xs font-semibold">Stroke Color</Label>
-
-      <div className="flex items-center pb-4 justify-center">
-        <ColorPicker
-          value={localValue}
-          format="hex"
-          gradient={true}
-          solid={true}
-          onChange={handleColorChange}
-          allowAddGradientStops={true}
-        />
-      </div>
-    </div>
-  );
-};
-
-const ShadowColorPickerControl = ({
-  trackItem
-}: {
-  trackItem?: ITrackItemAndDetails;
-}) => {
-  const [localValue, setLocalValue] = useState<string>("#000000");
-  const isLargeScreen = useIsLargeScreen();
-  const { setControItemDrawerOpen } = useLayoutStore();
-
-  useEffect(() => {
-    // Get the current shadow color from track item details
-    const currentShadowColor =
-      trackItem?.details?.boxShadow?.color || "#000000";
-    setLocalValue(currentShadowColor);
-  }, [trackItem]);
-
-  const handleColorChange = (color: string) => {
-    setLocalValue(color);
-
-    // Update the shadow color using the dispatch system
-    dispatch(EDIT_OBJECT, {
-      payload: {
-        [trackItem?.id || ""]: {
-          details: {
-            boxShadow: {
-              ...trackItem?.details?.boxShadow,
-              color: color
-            }
-          }
-        }
-      }
-    });
-  };
-
-  const handleClose = () => {
-    setControItemDrawerOpen(false);
-  };
-
-  return (
-    <div className="flex flex-col gap-4 p-4">
-      <Label className="font-sans text-xs font-semibold">Shadow Color</Label>
-
-      <div className="flex items-center pb-4 justify-center">
-        <ColorPicker
-          value={localValue}
-          format="hex"
-          gradient={true}
-          solid={true}
-          onChange={handleColorChange}
-          allowAddGradientStops={true}
-        />
-      </div>
-    </div>
-  );
-};
-
-const BackgroundColorPickerControl = ({
-  trackItem
-}: {
-  trackItem?: ITrackItemAndDetails;
-}) => {
-  const [localValue, setLocalValue] = useState<string>("#ffffff");
-  const isLargeScreen = useIsLargeScreen();
-  const { setControItemDrawerOpen } = useLayoutStore();
-
-  useEffect(() => {
-    // Get the current background color from track item details
-    const currentBackgroundColor = trackItem?.details?.background || "#ffffff";
-    setLocalValue(currentBackgroundColor);
-  }, [trackItem]);
-
-  const handleColorChange = (color: string) => {
-    setLocalValue(color);
-
-    // Update the background color using the dispatch system
-    dispatch(EDIT_OBJECT, {
-      payload: {
-        [trackItem?.id || ""]: {
-          details: {
-            background: color
-          }
-        }
-      }
-    });
-  };
-
-  const handleClose = () => {
-    setControItemDrawerOpen(false);
-  };
-
-  return (
-    <div className="flex flex-col gap-4 p-4">
-      <Label className="font-sans text-xs font-semibold">
-        Background Color
-      </Label>
-
-      <div className="flex items-center pb-4 justify-center">
-        <ColorPicker
-          value={localValue}
-          format="hex"
-          gradient={true}
-          solid={true}
-          onChange={handleColorChange}
-          allowAddGradientStops={true}
-        />
-      </div>
-    </div>
-  );
-};
-
-const CaptionAppearedColorPickerControl = ({
-  trackItem
-}: {
-  trackItem?: ITrackItemAndDetails;
-}) => {
-  const [localValue, setLocalValue] = useState<string>("#ffffff");
-  const isLargeScreen = useIsLargeScreen();
-  const { setControItemDrawerOpen } = useLayoutStore();
-
-  useEffect(() => {
-    // Get the current appeared color from track item details
-    const currentAppearedColor = trackItem?.details?.appearedColor || "#ffffff";
-    setLocalValue(currentAppearedColor);
-  }, [trackItem]);
-
-  const handleColorChange = (color: string) => {
-    setLocalValue(color);
-
-    // Update the appeared color using the dispatch system
-    dispatch(EDIT_OBJECT, {
-      payload: {
-        [trackItem?.id || ""]: {
-          details: {
-            appearedColor: color
-          }
-        }
-      }
-    });
-  };
-
-  const handleClose = () => {
-    setControItemDrawerOpen(false);
-  };
-
-  return (
-    <div className="flex flex-col gap-4 p-4">
-      <Label className="font-sans text-xs font-semibold">Appeared Color</Label>
-
-      <div className="flex items-center pb-4 justify-center">
-        <ColorPicker
-          value={localValue}
-          format="hex"
-          gradient={true}
-          solid={true}
-          onChange={handleColorChange}
-          allowAddGradientStops={true}
-        />
-      </div>
-    </div>
-  );
-};
-
-const CaptionActiveColorPickerControl = ({
-  trackItem
-}: {
-  trackItem?: ITrackItemAndDetails;
-}) => {
-  const [localValue, setLocalValue] = useState<string>("#ffffff");
-  const isLargeScreen = useIsLargeScreen();
-  const { setControItemDrawerOpen } = useLayoutStore();
-
-  useEffect(() => {
-    // Get the current active color from track item details
-    const currentActiveColor = trackItem?.details?.activeColor || "#ffffff";
-    setLocalValue(currentActiveColor);
-  }, [trackItem]);
-
-  const handleColorChange = (color: string) => {
-    setLocalValue(color);
-
-    // Update the active color using the dispatch system
-    dispatch(EDIT_OBJECT, {
-      payload: {
-        [trackItem?.id || ""]: {
-          details: {
-            activeColor: color
-          }
-        }
-      }
-    });
-  };
-
-  const handleClose = () => {
-    setControItemDrawerOpen(false);
-  };
-
-  return (
-    <div className="flex flex-col gap-4 p-4">
-      <Label className="font-sans text-xs font-semibold">Active Color</Label>
-
-      <div className="flex items-center pb-4 justify-center">
-        <ColorPicker
-          value={localValue}
-          format="hex"
-          gradient={true}
-          solid={true}
-          onChange={handleColorChange}
-          allowAddGradientStops={true}
-        />
-      </div>
-    </div>
-  );
-};
-
-const CaptionActiveFillColorPickerControl = ({
-  trackItem
-}: {
-  trackItem?: ITrackItemAndDetails;
-}) => {
-  const [localValue, setLocalValue] = useState<string>("#ffffff");
-  const isLargeScreen = useIsLargeScreen();
-  const { setControItemDrawerOpen } = useLayoutStore();
-
-  useEffect(() => {
-    // Get the current active fill color from track item details
-    const currentActiveFillColor =
-      trackItem?.details?.activeFillColor || "#ffffff";
-    setLocalValue(currentActiveFillColor);
-  }, [trackItem]);
-
-  const handleColorChange = (color: string) => {
-    setLocalValue(color);
-
-    // Update the active fill color using the dispatch system
-    dispatch(EDIT_OBJECT, {
-      payload: {
-        [trackItem?.id || ""]: {
-          details: {
-            activeFillColor: color
-          }
-        }
-      }
-    });
-  };
-
-  const handleClose = () => {
-    setControItemDrawerOpen(false);
-  };
-
-  return (
-    <div className="flex flex-col gap-4 p-4">
-      <Label className="font-sans text-xs font-semibold">
-        Active Fill Color
-      </Label>
-
-      <div className="flex items-center pb-4 justify-center">
-        <ColorPicker
-          value={localValue}
-          format="hex"
-          gradient={true}
-          solid={true}
-          onChange={handleColorChange}
-          allowAddGradientStops={true}
-        />
-      </div>
-    </div>
-  );
-};
-
-const CaptionEmphasizeColorPickerControl = ({
-  trackItem
-}: {
-  trackItem?: ITrackItemAndDetails;
-}) => {
-  const [localValue, setLocalValue] = useState<string>("#ffffff");
-
-  useEffect(() => {
-    // Get the current active fill color from track item details
-    const currentActiveFillColor =
-      trackItem?.details?.isKeywordColor || "#ffffff";
-    setLocalValue(currentActiveFillColor);
-  }, [trackItem]);
-
-  const handleColorChange = (color: string) => {
-    setLocalValue(color);
-
-    // Update the active fill color using the dispatch system
-    dispatch(EDIT_OBJECT, {
-      payload: {
-        [trackItem?.id || ""]: {
-          details: {
-            isKeywordColor: color
-          }
-        }
-      }
-    });
-  };
-
-  return (
-    <div className="flex flex-col gap-4 p-4">
-      <Label className="font-sans text-xs font-semibold">Emphasize Color</Label>
-
+      <Label className="font-sans text-xs font-semibold">{label}</Label>
       <div className="flex items-center pb-4 justify-center">
         <ColorPicker
           value={localValue}
@@ -485,35 +103,108 @@ const ControlItem = ({
   feature: string;
 }) => {
   // First check if it's a custom feature (like strokeColor, color, shadowColor, backgroundColor, caption colors)
-  if (feature === "strokeColor") {
-    return <StrokeColorPickerControl trackItem={trackItem} />;
+  if (feature === "color") {
+    return (
+      <GenericColorPickerControl
+        trackItem={trackItem}
+        label="Color"
+        getValue={(d) =>
+          trackItem?.type === "text"
+            ? d?.color
+            : trackItem?.type === "caption"
+              ? d?.appearedColor
+              : d?.background
+        }
+        buildPayload={(color) =>
+          trackItem?.type === "text"
+            ? { color }
+            : trackItem?.type === "caption"
+              ? { appearedColor: color }
+              : { background: color }
+        }
+      />
+    );
   }
 
-  if (feature === "color") {
-    return <ColorPickerControl trackItem={trackItem} />;
+  if (feature === "strokeColor") {
+    return (
+      <GenericColorPickerControl
+        trackItem={trackItem}
+        label="Stroke Color"
+        defaultValue="#000000"
+        getValue={(d) => d?.borderColor}
+        buildPayload={(color) => ({ borderColor: color })}
+      />
+    );
   }
 
   if (feature === "shadowColor") {
-    return <ShadowColorPickerControl trackItem={trackItem} />;
+    return (
+      <GenericColorPickerControl
+        trackItem={trackItem}
+        label="Shadow Color"
+        defaultValue="#000000"
+        getValue={(d) => d?.boxShadow?.color}
+        buildPayload={(color) => ({
+          boxShadow: { ...trackItem?.details?.boxShadow, color }
+        })}
+      />
+    );
   }
 
   if (feature === "backgroundColor") {
-    return <BackgroundColorPickerControl trackItem={trackItem} />;
+    return (
+      <GenericColorPickerControl
+        trackItem={trackItem}
+        label="Background Color"
+        getValue={(d) => d?.background}
+        buildPayload={(color) => ({ background: color })}
+      />
+    );
   }
 
   if (feature === "appearedColor") {
-    return <CaptionAppearedColorPickerControl trackItem={trackItem} />;
+    return (
+      <GenericColorPickerControl
+        trackItem={trackItem}
+        label="Appeared Color"
+        getValue={(d) => d?.appearedColor}
+        buildPayload={(color) => ({ appearedColor: color })}
+      />
+    );
   }
 
   if (feature === "activeColor") {
-    return <CaptionActiveColorPickerControl trackItem={trackItem} />;
+    return (
+      <GenericColorPickerControl
+        trackItem={trackItem}
+        label="Active Color"
+        getValue={(d) => d?.activeColor}
+        buildPayload={(color) => ({ activeColor: color })}
+      />
+    );
   }
 
   if (feature === "activeFillColor") {
-    return <CaptionActiveFillColorPickerControl trackItem={trackItem} />;
+    return (
+      <GenericColorPickerControl
+        trackItem={trackItem}
+        label="Active Fill Color"
+        getValue={(d) => d?.activeFillColor}
+        buildPayload={(color) => ({ activeFillColor: color })}
+      />
+    );
   }
+
   if (feature === "emphasizeColor") {
-    return <CaptionEmphasizeColorPickerControl trackItem={trackItem} />;
+    return (
+      <GenericColorPickerControl
+        trackItem={trackItem}
+        label="Emphasize Color"
+        getValue={(d) => d?.isKeywordColor}
+        buildPayload={(color) => ({ isKeywordColor: color })}
+      />
+    );
   }
 
   // Then check track item type for standard features
@@ -580,12 +271,18 @@ export default function ControlItemHorizontal() {
       if (trackItem) {
         setTrackItem(trackItem);
         setLayoutTrackItem(trackItem);
-      } else console.log(transitionsMap[id]);
+      } else {
+        // id thuộc transitionsMap (không phải track item thường, vd transition
+        // được chọn trên timeline) — không có panel tương ứng, phải reset để
+        // tránh panel của item được chọn trước đó bị "dính" lại trên màn hình.
+        setTrackItem(null);
+        setLayoutTrackItem(null);
+      }
     } else {
       setTrackItem(null);
       setLayoutTrackItem(null);
     }
-  }, [activeIds, trackItemsMap]);
+  }, [activeIds, trackItemsMap, transitionsMap]);
   const handleMenuItemClick = (menuItem: string, label: string) => {
     if (!isLargeScreen) {
       setControItemDrawerOpen(true);

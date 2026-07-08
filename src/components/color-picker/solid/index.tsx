@@ -53,6 +53,20 @@ const ColorPickerSolid: FC<IPropsComp> = ({
     });
   };
 
+  // D1A chroma-key color: complement of the brand accent #00FF41 (135° hue)
+  // rotated 180° on the HSL wheel → 315° → #FF00BE. Used instead of true
+  // alpha so semi-transparent UI (glass fill, glow, shadow) can still be
+  // chroma-keyed out cleanly in an external NLE without a true-alpha export.
+  const CHROMA_KEY_COLOR = "#FF00BE";
+
+  const onSetTransparent = () => {
+    setInit(false);
+    setColor({ hex: CHROMA_KEY_COLOR, alpha: 100 });
+    onChange(checkFormat(tinycolor(CHROMA_KEY_COLOR).toRgbString(), format, 100));
+  };
+
+  const isTransparent = color.hex.toLowerCase() === CHROMA_KEY_COLOR.toLowerCase() && color.alpha === 100;
+
   return (
     <div ref={node} className="flex flex-col gap-4">
       <ColorPickerPanel
@@ -61,6 +75,23 @@ const ColorPickerSolid: FC<IPropsComp> = ({
         colorBoardHeight={colorBoardHeight}
         onChange={onCompleteChange}
       />
+      <button
+        type="button"
+        onClick={onSetTransparent}
+        className={[
+          "flex items-center gap-2 rounded-md border px-3 py-1.5 text-xs font-medium transition-colors",
+          isTransparent
+            ? "border-ring bg-accent text-accent-foreground"
+            : "border-border text-muted-foreground hover:text-foreground"
+        ].join(" ")}
+      >
+        <span
+          aria-hidden
+          className="h-4 w-4 rounded-sm border border-border"
+          style={{ background: CHROMA_KEY_COLOR }}
+        />
+        Transparent (chroma key)
+      </button>
       <InputRgba
         hex={color.hex}
         alpha={color.alpha}

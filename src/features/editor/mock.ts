@@ -10,21 +10,22 @@
 //
 // KHÔNG SỬA:
 //   Cấu trúc ngoài (id, fps, tracks, size, details, animations)
-//   Các field từ LayerSchema: x, y, scale, rotate, opacity, fromFrame,
-//   durationFrames, blur, brightness, entranceEffect, backgroundEffect,
-//   effectDuration, effectIntensity
-//   Các field từ LayerTextStyleSchema: bold, underline, textTransform,
-//   color, textAlign, strokeWidth, strokeColor, maxWidth
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const DURATION_MS = 0; // ← CONFIG.duration * 1000
+// Bump this every time the metadata shape below changes (add/remove/rename a
+// schema field, change TIMING keys, change CONFIG.duration). This invalidates
+// any stale browser autosave automatically — see utils/autosave.ts — so a
+// schema change here can never get silently overridden by old saved data.
+export const DESIGN_SCHEMA_VERSION = 11;
+
+const MOTION_SCENE_DURATION_MS = 5_000; // motion-config.ts CONFIG.duration (5.0s = 4s30f) * 1000
 
 export const design = {
   id:  "motion-scene-default",
   fps: 30,
   tracks: [
     {
-      id:       "track-motion-main",
+      id:       "track-motion-scene",
       type:     "video",
       name:     "MotionScene",
       accepts:  ["text","image","video","audio","composition","caption","template","motionScene"],
@@ -41,8 +42,8 @@ export const design = {
       id:       "motion-scene-item-1",
       name:     "Motion Scene 1",
       type:     "motionScene",
-      display:  { from: 0, to: DURATION_MS },
-      duration: DURATION_MS,
+      display:  { from: 0, to: MOTION_SCENE_DURATION_MS },
+      duration: MOTION_SCENE_DURATION_MS,
       details: {
         width: 1080, height: 1920, top: 0, left: 0,
         opacity: 100, transform: "none", rotate: "0deg",
@@ -53,44 +54,9 @@ export const design = {
       },
       animations: {},
       metadata: {
-        // ─── Mỗi key ở đây = 1 layer trong ORDERABLE_KEYS ──────────────────
-        // Thêm/bớt layer cho khớp với motion-scene.tsx
-        // Field của LayerSchema (không sửa tên, chỉ sửa giá trị nếu cần):
-        //   x, y, scale, rotate, opacity, fromFrame, durationFrames,
-        //   blur, brightness, entranceEffect, backgroundEffect,
-        //   effectDuration, effectIntensity
-        // Field của LayerTextStyleSchema (chỉ dùng cho text layer):
-        //   bold, underline, textTransform, color, textAlign,
-        //   strokeWidth, strokeColor, maxWidth
-        // Field tuỳ chỉnh: lấy đúng từ schema đã định nghĩa trong motion-scene.tsx
-
-        // ← ví dụ visual layer (card, icon...):
-        // layerName: {
-        //   x: 0, y: 0, scale: 1, rotate: 0, opacity: 100,
-        //   fromFrame: 0, durationFrames: 9999,
-        //   blur: 0, brightness: 100,
-        //   entranceEffect: 'fade', backgroundEffect: 'none',
-        //   effectDuration: 0, effectIntensity: 100,
-        //   // ← custom fields từ schema, ví dụ:
-        //   // cardBg: '', cardWidth: 0, cardHeight: 0, ...
-        // },
-
-        // ← ví dụ text layer (label, title...):
-        // layerName: {
-        //   x: 0, y: 0, scale: 1, rotate: 0, opacity: 100,
-        //   fromFrame: 0, durationFrames: 9999,
-        //   blur: 0, brightness: 100,
-        //   entranceEffect: 'fade', backgroundEffect: 'none',
-        //   effectDuration: 0, effectIntensity: 100,
-        //   bold: false, underline: false, textTransform: 'none',
-        //   color: '', textAlign: 'center',
-        //   strokeWidth: 0, strokeColor: '', maxWidth: 0,
-        //   // ← custom fields từ schema, ví dụ:
-        //   // content: '', fontSize: 0, gapBelow: 0,
-        // },
-
-        accentColor: '#00FF41',
-        zOrder: [], // ← điền đúng thứ tự layers, khớp với ORDERABLE_KEYS
+        background: { color: '#FFFFFF' },
+        headline:   { color: '#111111' },
+        icon:       {},
       },
     },
   },

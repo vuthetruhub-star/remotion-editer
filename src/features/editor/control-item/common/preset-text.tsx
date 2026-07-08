@@ -8,10 +8,10 @@ import { useIsLargeScreen } from "@/hooks/use-media-query";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   applyPreset,
-  getTextShadow,
   NONE_PRESET,
   TEXT_PRESETS
 } from "../floating-controls/text-preset-picker";
+import { getTextShadow } from "./text-shadow";
 
 interface PresetTextProps {
   trackItem: ITrackItem & any;

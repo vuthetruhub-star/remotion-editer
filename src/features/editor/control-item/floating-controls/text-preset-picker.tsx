@@ -2,18 +2,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { dispatch } from "@designcombo/events";
 import { EDIT_OBJECT } from "@designcombo/state";
 import { ITrackItem } from "@designcombo/types";
-import { CircleOff, XIcon } from "lucide-react";
-import useLayoutStore from "../../store/use-layout-store";
-import { useRef } from "react";
-import useClickOutside from "../../hooks/useClickOutside";
-import Draggable from "react-draggable";
-
-interface IBoxShadow {
-  color: string;
-  x: number;
-  y: number;
-  blur: number;
-}
+import { CircleOff } from "lucide-react";
+import { getTextShadow, type IBoxShadow } from "../common/text-shadow";
+import FloatingPanel from "./floating-panel";
 
 interface ITextPreset {
   backgroundColor: string;
@@ -138,14 +129,7 @@ export const TEXT_PRESETS: ITextPreset[] = [
   }
 ];
 
-export const getTextShadow = (boxShadow?: IBoxShadow): string | undefined => {
-  if (!boxShadow) return undefined;
-  return `${boxShadow.x / 8}px ${boxShadow.y / 8}px ${boxShadow.blur / 8}px ${
-    boxShadow.color
-  }`;
-};
 export const applyPreset = (preset: any, trackItem: ITrackItem & any) => {
-  console.log(preset);
   const overrides: any = {};
   if (preset.boxShadow === undefined) {
     preset.boxShadow = { color: "transparent", x: 0, y: 0, blur: 0 };
@@ -164,24 +148,8 @@ export default function TextPresetPicker({
 }: {
   trackItem: ITrackItem & any;
 }) {
-  const { setFloatingControl } = useLayoutStore();
-  const floatingRef = useRef<HTMLDivElement>(null);
-  useClickOutside(floatingRef as React.RefObject<HTMLElement>, () =>
-    setFloatingControl("")
-  );
-
   return (
-    <div
-      ref={floatingRef}
-      className="absolute left-full top-2 z-200 ml-2 w-56 bg-card p-0 border"
-    >
-      <div className="handle flex cursor-grab items-center justify-between px-4 py-3">
-        <p className="text-sm font-bold">Presets</p>
-        <div className="h-4 w-4" onClick={() => setFloatingControl("")}>
-          <XIcon className="h-3 w-3 cursor-pointer font-extrabold text-muted-foreground" />
-        </div>
-      </div>
-
+    <FloatingPanel title="Presets">
       <ScrollArea className="h-[400px] w-full py-0">
         <div className="grid grid-cols-3 gap-2 px-4">
           <div
@@ -215,6 +183,6 @@ export default function TextPresetPicker({
           ))}
         </div>
       </ScrollArea>
-    </div>
+    </FloatingPanel>
   );
 }

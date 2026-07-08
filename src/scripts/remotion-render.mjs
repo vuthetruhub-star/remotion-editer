@@ -20,8 +20,9 @@ const require = createRequire(import.meta.url);
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const projectRoot = join(__dirname, "..", "..");
 
-const [,, inputBase64, outputPath, scaleArg] = process.argv;
+const [,, inputBase64, outputPath, scaleArg, transparentArg] = process.argv;
 const renderScale = scaleArg ? parseFloat(scaleArg) : 1;
+const isTransparent = transparentArg === "1";
 
 if (!inputBase64 || !outputPath) {
   process.stdout.write("ERROR:Missing arguments\n");
@@ -78,10 +79,26 @@ async function run() {
 
     const totalFrames = composition.durationInFrames;
 
+    // h264/mp4 can never store an alpha channel — a "transparent" composition
+    // always bakes to an opaque background with that codec. When the project
+    // background is transparent, render to webm/vp9 with an alpha pixel format
+    // instead, which Remotion's OffthreadVideo can decode with alpha both in
+    // Player preview and in a later render. vp9 (not vp8) because third-party
+    // NLEs (CapCut, DaVinci Resolve) support WebM-alpha decode for vp9 far
+    // more reliably than for vp8, even though both work fine in Chrome/Firefox.
     await renderMedia({
       composition,
       serveUrl,
-      codec: "h264",
+      codec: isTransparent ? "vp9" : "h264",
+      // Alpha pixel format requires PNG intermediate frames (JPEG has no alpha
+      // channel to carry) — without this, renderMedia rejects yuva420p outright.
+      // colorSpace must NOT be the "bt709" default when rendering alpha: Remotion
+      // inserts a `zscale` ffmpeg filter for bt709 color correction, and zscale
+      // silently drops the alpha plane (no error — the output just quietly loses
+      // transparency). "default" skips that filter entirely.
+      ...(isTransparent
+        ? { pixelFormat: "yuva420p", imageFormat: "png", colorSpace: "default" }
+        : {}),
       outputLocation: outputPath,
       inputProps,
       scale: renderScale,

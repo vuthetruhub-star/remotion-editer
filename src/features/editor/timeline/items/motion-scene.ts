@@ -1,7 +1,9 @@
 import { Resizable, ResizableProps, Control } from "@designcombo/timeline";
 import { createResizeControls } from "../controls";
 
-// RENAME: Replace "MotionScene" with your project name when using as a template.
+// Class CỐ ĐỊNH, dùng chung mãi mãi cho MỌI motion — không tạo class riêng
+// theo từng ý tưởng motion nữa. Đổi ý tưởng chỉ cần sửa nội dung trong
+// motion-config.ts + motion-scene.tsx, không đụng file này.
 class MotionScene extends Resizable {
   static type = "MotionScene";
 

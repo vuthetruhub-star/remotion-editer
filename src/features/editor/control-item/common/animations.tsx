@@ -6,7 +6,7 @@ import useLayoutStore from "../../store/use-layout-store";
 import { useIsLargeScreen } from "@/hooks/use-media-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import useStore from "../../store/use-store";
-import { createPresetButtons } from "../floating-controls/animation-picker";
+import { createPresetButtons, NoneButton } from "../floating-controls/animation-picker";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AnimationDuration } from "./animation-duration";
 interface PresetTextProps {
@@ -78,6 +78,7 @@ const SelectaAnimation = ({ trackItem }: { trackItem: ITrackItem & IText }) => {
             <TabsContent value="in">
               <ScrollArea className="h-[300px]">
                 <div className="grid grid-cols-[repeat(auto-fit,minmax(100px,1fr))] gap-2 py-4">
+                  <NoneButton type="in" activeIds={activeIds} trackItemsMap={trackItemsMap} />
                   {presetInButtons}
                 </div>
               </ScrollArea>
@@ -85,6 +86,7 @@ const SelectaAnimation = ({ trackItem }: { trackItem: ITrackItem & IText }) => {
             <TabsContent value="loop">
               <ScrollArea className="h-[300px]">
                 <div className="grid grid-cols-[repeat(auto-fit,minmax(100px,1fr))] gap-2 py-4">
+                  <NoneButton type="loop" activeIds={activeIds} trackItemsMap={trackItemsMap} />
                   {presetLoopButtons}
                 </div>
               </ScrollArea>
@@ -92,6 +94,7 @@ const SelectaAnimation = ({ trackItem }: { trackItem: ITrackItem & IText }) => {
             <TabsContent value="out">
               <ScrollArea className="h-[300px]">
                 <div className="grid grid-cols-[repeat(auto-fit,minmax(100px,1fr))] gap-2 py-4">
+                  <NoneButton type="out" activeIds={activeIds} trackItemsMap={trackItemsMap} />
                   {presetOutButtons}
                 </div>
               </ScrollArea>

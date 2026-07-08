@@ -11,19 +11,40 @@ export async function POST(request: Request) {
 
     const inputProps = { trackItemIds, trackItemsMap, transitionsMap, fps, size, background, duration };
     const inputBase64 = Buffer.from(JSON.stringify(inputProps)).toString("base64");
-    const outputPath = path.join(os.tmpdir(), `d1a-render-${Date.now()}.mp4`);
+
+    // h264/mp4 can't carry an alpha channel — if the project background is
+    // transparent, render webm/vp8 with alpha instead so the exported clip
+    // stays transparent when reused as an overlay (see remotion-render.mjs).
+    const isTransparentBg =
+      !background || background.type !== "color" || background.value === "transparent";
+    const ext = isTransparentBg ? "webm" : "mp4";
+    const contentType = isTransparentBg ? "video/webm" : "video/mp4";
+
+    const outputPath = path.join(os.tmpdir(), `d1a-render-${Date.now()}.${ext}`);
     const renderScale = String(typeof scale === "number" && scale > 0 ? scale : 1);
 
     const scriptPath = path.join(process.cwd(), "src/scripts/remotion-render.mjs");
     const nodeBin = process.execPath; // same node that runs Next.js
 
-    console.log("[render-local] Spawning child process:", nodeBin, scriptPath, "scale:", renderScale);
+    console.log(
+      "[render-local] Spawning child process:",
+      nodeBin,
+      scriptPath,
+      "scale:",
+      renderScale,
+      "transparent:",
+      isTransparentBg,
+    );
 
     const result = await new Promise<string>((resolve, reject) => {
-      const child = spawn(nodeBin, [scriptPath, inputBase64, outputPath, renderScale], {
-        env: { ...process.env, FORCE_COLOR: "0" },
-        stdio: ["ignore", "pipe", "pipe"],
-      });
+      const child = spawn(
+        nodeBin,
+        [scriptPath, inputBase64, outputPath, renderScale, isTransparentBg ? "1" : "0"],
+        {
+          env: { ...process.env, FORCE_COLOR: "0" },
+          stdio: ["ignore", "pipe", "pipe"],
+        },
+      );
 
       let lastLine = "";
       child.stdout.on("data", (chunk: Buffer) => {
@@ -54,8 +75,8 @@ export async function POST(request: Request) {
 
     return new Response(fileBuffer, {
       headers: {
-        "Content-Type": "video/mp4",
-        "Content-Disposition": 'attachment; filename="export.mp4"',
+        "Content-Type": contentType,
+        "Content-Disposition": `attachment; filename="export.${ext}"`,
         "Content-Length": String(fileBuffer.length),
       },
     });
