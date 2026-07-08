@@ -14,19 +14,11 @@ pnpm install
 node src/scripts/test-zod-schema.mjs && node src/scripts/test-zod-reuse.mjs
 ```
 
-Sau đó tạo 2 symlink tiện lợi ở thư mục gốc (Windows PowerShell):
-
-```powershell
-New-Item -ItemType SymbolicLink -Path "motion-config.ts" -Target "src\features\editor\motion-config.ts"
-New-Item -ItemType SymbolicLink -Path "motion-scene.tsx" -Target "src\features\editor\player\items\motion-scene.tsx"
-```
-
-Mac / Linux:
-
-```bash
-ln -s src/features/editor/motion-config.ts motion-config.ts
-ln -s src/features/editor/player/items/motion-scene.tsx motion-scene.tsx
-```
+`pnpm install` tự chạy `postinstall` → tự tạo 2 symlink root (`motion-config.ts`,
+`motion-scene.tsx`) qua `scripts/setup-symlinks.mjs` — không cần làm tay nữa.
+Nếu Windows chưa bật Developer Mode, bước này có thể báo lỗi quyền (in ra
+cảnh báo, không làm hỏng install) — xem mục "Lưu ý symlink" bên dưới để tạo
+lại thủ công.
 
 Rồi khởi động editor:
 
@@ -44,8 +36,12 @@ Nếu 62 tests pass và server chạy được → sẵn sàng. Editor tại `ht
 
 > **Lưu ý symlink:** File `motion-config.ts` ở thư mục gốc là symlink trỏ vào
 > `src/features/editor/motion-config.ts`. Sửa file đó là sửa thẳng bản gốc —
-> không cần vào sâu trong thư mục `src/`. Symlink không lên GitHub nên phải tạo
-> lại mỗi lần clone mới (AI sẽ tự làm bước này).
+> không cần vào sâu trong thư mục `src/`. Symlink không lên GitHub nên `postinstall`
+> tự tạo lại sau mỗi lần `pnpm install`. Nếu vì lý do gì đó nó không tự tạo được
+> (thường do Windows chưa bật Developer Mode), tạo lại bằng:
+> ```powershell
+> node scripts/setup-symlinks.mjs
+> ```
 
 ---
 
@@ -144,29 +140,23 @@ git clone https://github.com/vuthetruhub-star/remotion-editer.git d1a-motion-edi
 cd d1a-motion-editor
 ```
 
-**3. Cài dependencies**
+**3. Cài dependencies (tự tạo symlink luôn qua postinstall)**
 ```bash
 pnpm install
 ```
 
-**4. Tạo symlink (Windows)**
-```powershell
-New-Item -ItemType SymbolicLink -Path "motion-config.ts" -Target "src\features\editor\motion-config.ts"
-New-Item -ItemType SymbolicLink -Path "motion-scene.tsx" -Target "src\features\editor\player\items\motion-scene.tsx"
-```
-
-**4. Tạo symlink (Mac / Linux)**
+Nếu symlink không tự tạo được (thường do Windows chưa bật Developer Mode),
+chạy tay:
 ```bash
-ln -s src/features/editor/motion-config.ts motion-config.ts
-ln -s src/features/editor/player/items/motion-scene.tsx motion-scene.tsx
+node scripts/setup-symlinks.mjs
 ```
 
-**5. Chạy editor**
+**4. Chạy editor**
 ```bash
 pnpm dev
 ```
 
-**6. Mở trình duyệt vào:** http://localhost:3000/edit
+**5. Mở trình duyệt vào:** http://localhost:3000/edit
 
 ---
 

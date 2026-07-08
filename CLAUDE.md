@@ -17,16 +17,12 @@ pnpm install
 node src/scripts/test-zod-schema.mjs && node src/scripts/test-zod-reuse.mjs
 ```
 
-Tạo 2 symlink ở thư mục gốc (Windows PowerShell):
-```powershell
-New-Item -ItemType SymbolicLink -Path "motion-config.ts" -Target "src\features\editor\motion-config.ts"
-New-Item -ItemType SymbolicLink -Path "motion-scene.tsx" -Target "src\features\editor\player\items\motion-scene.tsx"
-```
-
-Mac / Linux:
+`pnpm install` tự chạy `postinstall` (`scripts/setup-symlinks.mjs`) và tự tạo
+2 symlink root (`motion-config.ts`, `motion-scene.tsx`) — không cần AI tự tạo
+tay nữa. Nếu vì lý do gì đó (thường là Windows chưa bật Developer Mode) symlink
+không tự tạo được, chạy tay:
 ```bash
-ln -s src/features/editor/motion-config.ts motion-config.ts
-ln -s src/features/editor/player/items/motion-scene.tsx motion-scene.tsx
+node scripts/setup-symlinks.mjs
 ```
 
 Khởi động (Windows — PowerShell không tự load PATH nên dùng full path):
@@ -38,7 +34,9 @@ Mac / Linux:
 pnpm dev
 ```
 
-> Symlink không lên GitHub — **AI phải tự tạo lại mỗi lần clone mới**, không cần hỏi user.
+> Symlink không lên GitHub (xem `.gitignore`) — `postinstall` tự tái tạo mỗi lần
+> clone mới. AI chỉ cần tự chạy `scripts/setup-symlinks.mjs` nếu bước tự động
+> báo lỗi quyền, không cần hỏi user.
 
 ## Running this project
 - `pnpm install`
