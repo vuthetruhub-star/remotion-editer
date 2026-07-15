@@ -4,8 +4,9 @@
 /motion-config.ts
 /motion-scene.tsx
 
-# Local AI tool permission cache — machine-specific, not part of the template
-.claude/
+# Local AI tool settings/session — machine-specific. Track ONLY the shared skill.
+.claude/*
+!.claude/skills/
 
 # Screenshots / preview images
 *.png

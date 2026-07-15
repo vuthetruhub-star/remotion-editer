@@ -50,6 +50,20 @@ Trước khi viết bất kỳ composition/element/control panel nào, đọc:
 - `src/brand-docs/D1A-motion-describe.md` — cách mô tả motion bằng ngôn ngữ thường
 - `src/brand-docs/EDITOR-integration.md` — **cách thêm motion asset mới** vào editor
 
+## Biên tập & "taste" khi làm motion — đọc skill `motion-edit-craft`
+Repo có sẵn một Claude Code skill tại `.claude/skills/motion-edit-craft/` (tự nạp khi mở repo bằng
+Claude Code). Đây là NGUỒN kiến thức biên tập/craft — dùng khi **quyết định làm gì** (chọn visual cho
+một beat nội dung, timing khớp voiceover, hook, mật độ, caption cadence, SFX), song song với các file
+kỹ thuật ở trên (quyết định **làm thế nào**).
+- `.claude/skills/motion-edit-craft/SKILL.md` — triết lý 2 trục (reference quyết "trông thế nào";
+  skill dẫn "cách thể hiện") + quy trình 7 bước.
+- `knowledge/taste-rules.md` — visual phải DẠY chứ không lặp lời; hook; mật độ; thứ bậc nguồn asset.
+- `knowledge/scene-catalog.md` — 50 loại overlay → recipe map sang schema layer + TIMING của repo.
+- `knowledge/motion-taste.md` · `caption-rules.md` · `sfx-rules.md` · `image-style.md`.
+> Kiến thức trong skill và trong repo là MỘT — skill được commit thẳng vào repo để mọi bản clone +
+> Claude Code đều hiểu đủ để làm. `D1A-motion.md` vẫn là nguồn kỹ thuật gốc cho easing/pattern; skill
+> chỉ thêm lớp "taste" mà repo chưa có.
+
 ## Brand defaults — chỉ 2 thứ được giữ làm default
 - **Accent color duy nhất**: `#00FF41` — dùng làm `accentColor` default trong schema
 - **Font**: `Geist, system-ui, sans-serif` — dùng làm font mặc định
