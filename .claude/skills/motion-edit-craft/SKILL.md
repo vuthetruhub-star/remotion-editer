@@ -22,7 +22,11 @@ Trước khi làm bất cứ scene/motion nào:
 2. `src/brand.ts` — colors / fonts / spacing / radii / motion tokens (NGUỒN của mọi giá trị visual)
 3. `src/brand-docs/D1A-motion.md` — pattern kỹ thuật beat-based + easing
 4. `src/brand-docs/EDITOR-integration.md` — cách thêm motion asset (schema, 5 điểm đăng ký)
-5. Skill này: bắt đầu từ **§1 (triết lý 2 trục)** rồi **§2 (quy trình)**, sau đó mở file `knowledge/` liên quan.
+5. **[knowledge/repo-constraints.md](knowledge/repo-constraints.md)** — 🔴 RÀNG BUỘC CỨNG của repo
+   (chroma-key-safe, nền TRONG SUỐT/keyable, content field phải khai RawSchema). **ĐỌC TRƯỚC KHI VIẾT STYLE** —
+   nó GHI ĐÈ kiến thức nguồn ở chỗ mâu thuẫn (vd skill nói "nền tối" nhưng repo mặc định trong suốt).
+6. Khi dựng scene thật, mở [knowledge/worked-example.md](knowledge/worked-example.md) — khuôn code đầy đủ để chép.
+7. Skill này: bắt đầu từ **§1 (triết lý 2 trục)** rồi **§2 (quy trình)**, sau đó mở file `knowledge/` liên quan.
 
 ---
 
@@ -95,6 +99,8 @@ Khi user yêu cầu dựng scene / làm motion cho một đoạn nội dung:
 | [caption-rules.md](knowledge/caption-rules.md) | Bước 5 — có voiceover | Word-punch cadence, emphasis ~1/phút, caption↔beat loại trừ, current-word highlight, closer im lặng — map vào caption-presets của repo |
 | [sfx-rules.md](knowledge/sfx-rules.md) | Bước 6 — gắn SFX | Mỗi SFX ↔ một sự kiện motion, timing theo TIMING/appear_sec, 5 luật thiết kế âm thanh, + nhạc bed (tùy chọn) |
 | [image-style.md](knowledge/image-style.md) | Khi cần ảnh AI/asset minh hoạ | 1 style khoá, subject cụ thể (four-word test), 1-subject-per-frame, prompt prefix theo palette `#00FF41`/nền tối |
+| [repo-constraints.md](knowledge/repo-constraints.md) | 🔴 Trước khi viết STYLE | Chroma-key-safe, nền trong suốt/keyable vs baked, content field vào RawSchema — lớp repo GHI ĐÈ kiến thức nguồn |
+| [worked-example.md](knowledge/worked-example.md) | Khi dựng scene thật | Khuôn code đầy đủ (stat_punch + vertical_timeline): RawSchema mở rộng, Beat `{f,data}`, panel tabs, mock.ts — chép rồi nhân bản |
 
 **Helper (trong `assets/`):**
 - `fetch_logo.py "Brand1" "Brand2"` — tải logo brand từ Wikipedia vào thư mục đích (không cần API key).

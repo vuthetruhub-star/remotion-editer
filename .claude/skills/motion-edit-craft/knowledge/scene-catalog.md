@@ -11,9 +11,13 @@
 > - **TIMING** — gợi ý cấu trúc beat (giây).
 > - **Taste** — cảnh báo/mẹo để không rơi vào bản "template rẻ tiền".
 >
-> **Brand áp cho tất cả:** accent `#00FF41` (`colors.primary`), nền tối `#0A0B0A`/`#101211`, font Geist,
-> canvas 1080×1920. Easing `s4ei/s4eo/s4vis/s4eb`. **1 accent lime mỗi frame.** Giá trị cụ thể → `brand.ts`
-> hoặc reference (trục A); recipe chỉ định *cấu trúc & cách thể hiện* (trục B).
+> **Brand áp cho tất cả:** accent `#00FF41` (`colors.primary`), font Geist, canvas 1080×1920. Easing
+> `s4ei/s4eo/s4vis/s4eb`. **1 accent lime mỗi frame.** Giá trị cụ thể → `brand.ts` hoặc reference (trục A);
+> recipe chỉ định *cấu trúc & cách thể hiện* (trục B).
+>
+> ⚠️ **Nền tối / glass-blur / vignette trong các recipe dưới chỉ đúng khi output là scene BAKED.** Repo mặc
+> định xuất **overlay keyable nền TRONG SUỐT** — đọc [repo-constraints.md](repo-constraints.md) trước khi
+> áp nền tối hay bất kỳ blur/glow nào (luật chroma-key-safe). Khi mâu thuẫn, repo-constraints thắng.
 >
 > **Ký hiệu:** ⛔ = tránh dùng (xem taste-rules §10) · 🟢 = cardless, OK trên short · 🟡 = có card nền, chỉ
 > landscape/longform · 🎬 = full takeover · ▲ = partial overlay (speaker/nền vẫn thấy).
