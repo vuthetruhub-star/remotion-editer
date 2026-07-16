@@ -101,8 +101,11 @@ Khi user yêu cầu dựng scene / làm motion cho một đoạn nội dung:
 | [image-style.md](knowledge/image-style.md) | Khi cần ảnh AI/asset minh hoạ | 1 style khoá, subject cụ thể (four-word test), 1-subject-per-frame, prompt prefix theo palette `#00FF41`/nền tối |
 | [repo-constraints.md](knowledge/repo-constraints.md) | 🔴 Trước khi viết STYLE | Chroma-key-safe, nền trong suốt/keyable vs baked, content field vào RawSchema — lớp repo GHI ĐÈ kiến thức nguồn |
 | [worked-example.md](knowledge/worked-example.md) | Khi dựng scene thật | Khuôn code đầy đủ (stat_punch + vertical_timeline): RawSchema mở rộng, Beat `{f,data}`, panel tabs, mock.ts — chép rồi nhân bản |
+| [workflow.md](knowledge/workflow.md) | Khi có script + video → tự ráp | Quy trình 7 bước pha 1–2: trích frame → transcript → align → beat plan → ghi design.json → user duyệt → Import/render |
+| [design-schema.md](knowledge/design-schema.md) | Khi ghi `design.json` | Shape JSON editor nạp được: motionScene theo 5 kind, video+zoom, caption, audio/SFX; timing MS vs appearSec |
 
 **Helper (trong `assets/`):**
+- `extract_frames.py <video> <out_dir> [--fps 1]` — trích frame để AI "thấy" nội dung màn hình (pha 1).
 - `fetch_logo.py "Brand1" "Brand2"` — tải logo brand từ Wikipedia vào thư mục đích (không cần API key).
 - `fetch_stock.py "<query>" <out_dir>` — tải stock video/ảnh từ Pexels (cần `PEXELS_API_KEY`, free).
 - Dùng để đổ asset thật vào `public/` của repo — asset thật luôn đọc "credible" hơn ảnh AI (xem image-style.md).
