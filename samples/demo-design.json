@@ -8,59 +8,48 @@
       "type": "video",
       "name": "Demo",
       "accepts": ["text", "image", "video", "audio", "composition", "caption", "template", "motionScene"],
-      "items": ["beat-hook", "beat-default"],
+      "items": ["b-hook", "b-stat", "b-word", "b-timeline", "b-default"],
       "magnetic": false,
       "static": false
     }
   ],
-  "trackItemIds": ["beat-hook", "beat-default"],
+  "trackItemIds": ["b-hook", "b-stat", "b-word", "b-timeline", "b-default"],
   "transitionsMap": {},
   "trackItemsMap": {
-    "beat-hook": {
-      "id": "beat-hook",
-      "name": "Hook",
-      "type": "motionScene",
-      "display": { "from": 0, "to": 3000 },
-      "duration": 3000,
-      "details": {
-        "width": 1080, "height": 1920, "top": 0, "left": 0,
-        "opacity": 100, "transform": "none", "rotate": "0deg",
-        "blur": 0, "brightness": 100,
-        "flipX": false, "flipY": false, "visibility": "visible",
-        "borderRadius": 0, "borderWidth": 0, "borderColor": "transparent",
-        "boxShadow": { "color": "transparent", "x": 0, "y": 0, "blur": 0 }
-      },
+    "b-hook": {
+      "id": "b-hook", "name": "Hook", "type": "motionScene",
+      "display": { "from": 0, "to": 3000 }, "duration": 3000,
+      "details": { "width": 1080, "height": 1920, "top": 0, "left": 0, "opacity": 100, "transform": "none", "rotate": "0deg", "blur": 0, "brightness": 100, "flipX": false, "flipY": false, "visibility": "visible", "borderRadius": 0, "borderWidth": 0, "borderColor": "transparent", "boxShadow": { "color": "transparent", "x": 0, "y": 0, "blur": 0 } },
       "animations": {},
-      "metadata": {
-        "kind": "hook_title",
-        "bgColor": "transparent",
-        "kicker": "TWO PEOPLE · WITH AI",
-        "title": "$400,000,000",
-        "kickerStyle": { "color": "#00FF41" },
-        "titleStyle": { "color": "#FFFFFF" }
-      }
+      "metadata": { "kind": "hook_title", "bgColor": "transparent", "kicker": "TWO PEOPLE · WITH AI", "title": "$400,000,000", "kickerStyle": { "color": "#00FF41" }, "titleStyle": { "color": "#FFFFFF" } }
     },
-    "beat-default": {
-      "id": "beat-default",
-      "name": "Default",
-      "type": "motionScene",
-      "display": { "from": 3000, "to": 6000 },
-      "duration": 3000,
-      "details": {
-        "width": 1080, "height": 1920, "top": 0, "left": 0,
-        "opacity": 100, "transform": "none", "rotate": "0deg",
-        "blur": 0, "brightness": 100,
-        "flipX": false, "flipY": false, "visibility": "visible",
-        "borderRadius": 0, "borderWidth": 0, "borderColor": "transparent",
-        "boxShadow": { "color": "transparent", "x": 0, "y": 0, "blur": 0 }
-      },
+    "b-stat": {
+      "id": "b-stat", "name": "Stat", "type": "motionScene",
+      "display": { "from": 3000, "to": 6000 }, "duration": 3000,
+      "details": { "width": 1080, "height": 1920, "top": 0, "left": 0, "opacity": 100, "transform": "none", "rotate": "0deg", "blur": 0, "brightness": 100, "flipX": false, "flipY": false, "visibility": "visible", "borderRadius": 0, "borderWidth": 0, "borderColor": "transparent", "boxShadow": { "color": "transparent", "x": 0, "y": 0, "blur": 0 } },
       "animations": {},
-      "metadata": {
-        "kind": "default",
-        "background": { "color": "#0A0B0A" },
-        "headline": { "color": "#00FF41" },
-        "icon": {}
-      }
+      "metadata": { "kind": "stat_punch", "bgColor": "transparent", "value": "10×", "caption": "FASTER SHIPPING", "valueStyle": { "color": "#FFFFFF" }, "captionStyle": { "color": "#00FF41" } }
+    },
+    "b-word": {
+      "id": "b-word", "name": "WordPop", "type": "motionScene",
+      "display": { "from": 6000, "to": 9000 }, "duration": 3000,
+      "details": { "width": 1080, "height": 1920, "top": 0, "left": 0, "opacity": 100, "transform": "none", "rotate": "0deg", "blur": 0, "brightness": 100, "flipX": false, "flipY": false, "visibility": "visible", "borderRadius": 0, "borderWidth": 0, "borderColor": "transparent", "boxShadow": { "color": "transparent", "x": 0, "y": 0, "blur": 0 } },
+      "animations": {},
+      "metadata": { "kind": "word_pop", "bgColor": "transparent", "vertical": 0.5, "item1": { "text": "ChatGPT", "appearSec": 0.2 }, "item2": { "text": "Claude", "appearSec": 1.1, "accent": true }, "item3": { "text": "Grok", "appearSec": 2.0 } }
+    },
+    "b-timeline": {
+      "id": "b-timeline", "name": "Timeline", "type": "motionScene",
+      "display": { "from": 9000, "to": 13000 }, "duration": 4000,
+      "details": { "width": 1080, "height": 1920, "top": 0, "left": 0, "opacity": 100, "transform": "none", "rotate": "0deg", "blur": 0, "brightness": 100, "flipX": false, "flipY": false, "visibility": "visible", "borderRadius": 0, "borderWidth": 0, "borderColor": "transparent", "boxShadow": { "color": "transparent", "x": 0, "y": 0, "blur": 0 } },
+      "animations": {},
+      "metadata": { "kind": "vertical_timeline", "bgColor": "#0A0B0A", "step1": { "heading": "Model routing", "appearSec": 0.3 }, "step2": { "heading": "/compact at 60%", "appearSec": 1.3 }, "step3": { "heading": "CLAUDE.md < 1k tokens", "appearSec": 2.3 }, "step4": { "heading": "2-hour timer", "appearSec": 3.2 } }
+    },
+    "b-default": {
+      "id": "b-default", "name": "Default", "type": "motionScene",
+      "display": { "from": 13000, "to": 16000 }, "duration": 3000,
+      "details": { "width": 1080, "height": 1920, "top": 0, "left": 0, "opacity": 100, "transform": "none", "rotate": "0deg", "blur": 0, "brightness": 100, "flipX": false, "flipY": false, "visibility": "visible", "borderRadius": 0, "borderWidth": 0, "borderColor": "transparent", "boxShadow": { "color": "transparent", "x": 0, "y": 0, "blur": 0 } },
+      "animations": {},
+      "metadata": { "kind": "default", "background": { "color": "#0A0B0A" }, "headline": { "color": "#00FF41" }, "icon": {} }
     }
   }
 }
