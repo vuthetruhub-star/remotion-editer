@@ -4,7 +4,7 @@ import { BoxAnim, ContentAnim, MaskAnim } from "@designcombo/animations";
 import { calculateContainerStyles, calculateMediaStyles } from "../styles";
 import { getAnimations } from "../../utils/get-animations";
 import { calculateFrames } from "../../utils/frames";
-import { OffthreadVideo } from "remotion";
+import { OffthreadVideo, interpolate, Easing } from "remotion";
 
 export const Video = ({
   item,
@@ -31,6 +31,21 @@ export const Video = ({
   const { durationInFrames } = calculateFrames(item.display, fps);
   const currentFrame = (frame || 0) - (item.display.from * fps) / 1000;
 
+  // Ken Burns / punch-in: zoom over time. details.zoom = { from, to } (scale).
+  // Không có zoom → scale 1 (no-op, backward-compatible). Container overflow:hidden
+  // nên scale > 1 crop vào giữa (punch-in). Xem samples/design-schema.
+  const zoom = (item.details as unknown as {
+    zoom?: { from?: number; to?: number };
+  }).zoom;
+  const zoomScale = zoom
+    ? interpolate(
+        currentFrame,
+        [0, Math.max(1, durationInFrames)],
+        [zoom.from ?? 1, zoom.to ?? 1],
+        { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: Easing.inOut(Easing.ease) }
+      )
+    : 1;
+
   const children = (
     <BoxAnim
       style={calculateContainerStyles(details, crop, {
@@ -51,6 +66,7 @@ export const Video = ({
           keyframeAnimations={animationTimed}
           frame={frame || 0}
         >
+          <div style={{ width: "100%", height: "100%", transform: `scale(${zoomScale})`, transformOrigin: "center center" }}>
           <div style={calculateMediaStyles(details, crop)}>
             <OffthreadVideo
               startFrom={(item.trim?.from! / 1000) * fps}
@@ -63,6 +79,7 @@ export const Video = ({
               // video would slow down ordinary mp4 sources for no reason.
               transparent={details.src?.endsWith(".webm")}
             />
+          </div>
           </div>
         </MaskAnim>
       </ContentAnim>
