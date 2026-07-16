@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { dispatch } from "@designcombo/events";
 import { HISTORY_UNDO, HISTORY_REDO, DESIGN_RESIZE } from "@designcombo/state";
@@ -14,7 +14,8 @@ import {
   FilePlus,
   Keyboard,
   ProportionsIcon,
-  ShareIcon
+  ShareIcon,
+  Upload
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 
@@ -68,6 +69,27 @@ export default function Navbar({
     if (!window.confirm("Start a new project? Unsaved changes will be lost.")) return;
     clearSavedDesign();
     dispatch(DESIGN_LOAD, { payload: mockDesign });
+  };
+
+  // Import a full design JSON (e.g. one an AI assembled: video + motionScene beats
+  // + captions) and load it into the editor for review/tweak before export.
+  const importInputRef = useRef<HTMLInputElement>(null);
+  const handleImportClick = () => importInputRef.current?.click();
+  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // allow re-importing the same file
+    if (!file) return;
+    try {
+      const payload = JSON.parse(await file.text());
+      if (!payload?.trackItemsMap || !payload?.tracks) {
+        window.alert("Invalid design JSON: missing trackItemsMap / tracks.");
+        return;
+      }
+      clearSavedDesign();
+      dispatch(DESIGN_LOAD, { payload });
+    } catch {
+      window.alert("Import failed: could not parse the JSON file.");
+    }
   };
 
   // Create a debounced function for setting the project name
@@ -129,6 +151,22 @@ export default function Navbar({
           >
             <FilePlus width={18} />
           </Button>
+          <Button
+            onClick={handleImportClick}
+            className="text-muted-foreground"
+            variant="ghost"
+            size="icon"
+            title="Import design JSON"
+          >
+            <Upload width={18} />
+          </Button>
+          <input
+            ref={importInputRef}
+            type="file"
+            accept="application/json,.json"
+            className="hidden"
+            onChange={handleImportFile}
+          />
         </div>
       </div>
 

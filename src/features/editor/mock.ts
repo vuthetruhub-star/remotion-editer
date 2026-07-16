@@ -16,7 +16,7 @@
 // schema field, change TIMING keys, change CONFIG.duration). This invalidates
 // any stale browser autosave automatically — see utils/autosave.ts — so a
 // schema change here can never get silently overridden by old saved data.
-export const DESIGN_SCHEMA_VERSION = 11;
+export const DESIGN_SCHEMA_VERSION = 12;
 
 const MOTION_SCENE_DURATION_MS = 5_000; // motion-config.ts CONFIG.duration (5.0s = 4s30f) * 1000
 

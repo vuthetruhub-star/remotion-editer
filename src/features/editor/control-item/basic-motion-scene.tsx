@@ -1,18 +1,20 @@
 "use client";
-// basic-motion-scene.tsx — panel CỐ ĐỊNH, dùng chung mãi mãi cho mọi motion.
+// basic-motion-scene.tsx — panel CỐ ĐỊNH, dùng chung cho mọi motion.
 //
-// KHÔNG viết panel riêng theo từng ý tưởng motion nữa. File này tự đọc
-// PANEL_SECTIONS (export từ player/items/motion-scene.tsx) và dùng AutoPanel
-// để vẽ — khi đổi nội dung motion, chỉ cần cập nhật PANEL_SECTIONS trong
-// motion-scene.tsx, KHÔNG sửa file này.
-
+// KHÔNG viết panel riêng theo từng kind. File này đọc `panelSections` của kind hiện
+// tại (registry: player/items/motion-scenes) và dùng AutoPanel để vẽ. Thêm/đổi field
+// của một kind → cập nhật panelSections trong file kind đó, KHÔNG sửa file này.
 import { useState } from "react";
 import { dispatch } from "@designcombo/events";
 import { EDIT_OBJECT } from "@designcombo/state";
 import { ITrackItem } from "@designcombo/types";
 import { Label } from "@/components/ui/label";
 import { AutoPanel, type PanelSection } from "./auto-panel";
-import { PANEL_SECTIONS } from "../player/items/motion-scene";
+import {
+  MOTION_SCENE_COMPONENTS,
+  MOTION_SCENE_KINDS,
+  getMotionSceneModule,
+} from "../player/items/motion-scenes";
 
 const dispatchTopLevel = (trackItem: ITrackItem, patch: Record<string, unknown>) =>
   dispatch(EDIT_OBJECT, {
@@ -86,13 +88,34 @@ function SectionRenderer({ section, meta, trackItem }: {
 
 export default function BasicMotionScene({ trackItem }: { trackItem: ITrackItem }) {
   const meta = (trackItem.metadata ?? {}) as Record<string, unknown>;
+  const kind = typeof meta.kind === "string" && MOTION_SCENE_COMPONENTS[meta.kind] ? meta.kind : "default";
+  const sections = getMotionSceneModule(kind).panelSections;
+
+  const onKindChange = (newKind: string) => {
+    // đổi kind → nạp defaultMeta của kind mới (giữ id/kind), field cũ dư bị bỏ qua khi parse
+    dispatchTopLevel(trackItem, { kind: newKind, ...getMotionSceneModule(newKind).defaultMeta });
+  };
 
   return (
     <div className="flex lg:h-[calc(100vh-84px)] flex-1 flex-col overflow-hidden min-h-[340px]">
       <div className="flex flex-col gap-4 px-4 py-4">
         <Label className="font-sans text-xs font-semibold">Motion Scene</Label>
-        {PANEL_SECTIONS.map((section, i) => (
-          <SectionRenderer key={i} section={section} meta={meta} trackItem={trackItem} />
+
+        <div className="flex flex-col gap-1.5">
+          <Label className="font-sans text-xs font-semibold">Kind</Label>
+          <select
+            value={kind}
+            onChange={(e) => onKindChange(e.target.value)}
+            className="rounded-md border border-border bg-background px-2 py-1.5 text-xs"
+          >
+            {MOTION_SCENE_KINDS.map((k) => (
+              <option key={k} value={k}>{k}</option>
+            ))}
+          </select>
+        </div>
+
+        {sections.map((section, i) => (
+          <SectionRenderer key={`${kind}-${i}`} section={section} meta={meta} trackItem={trackItem} />
         ))}
       </div>
     </div>

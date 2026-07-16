@@ -1,0 +1,66 @@
+{
+  "id": "demo-multi-kind",
+  "fps": 30,
+  "size": { "width": 1080, "height": 1920 },
+  "tracks": [
+    {
+      "id": "track-demo",
+      "type": "video",
+      "name": "Demo",
+      "accepts": ["text", "image", "video", "audio", "composition", "caption", "template", "motionScene"],
+      "items": ["beat-hook", "beat-default"],
+      "magnetic": false,
+      "static": false
+    }
+  ],
+  "trackItemIds": ["beat-hook", "beat-default"],
+  "transitionsMap": {},
+  "trackItemsMap": {
+    "beat-hook": {
+      "id": "beat-hook",
+      "name": "Hook",
+      "type": "motionScene",
+      "display": { "from": 0, "to": 3000 },
+      "duration": 3000,
+      "details": {
+        "width": 1080, "height": 1920, "top": 0, "left": 0,
+        "opacity": 100, "transform": "none", "rotate": "0deg",
+        "blur": 0, "brightness": 100,
+        "flipX": false, "flipY": false, "visibility": "visible",
+        "borderRadius": 0, "borderWidth": 0, "borderColor": "transparent",
+        "boxShadow": { "color": "transparent", "x": 0, "y": 0, "blur": 0 }
+      },
+      "animations": {},
+      "metadata": {
+        "kind": "hook_title",
+        "bgColor": "transparent",
+        "kicker": "TWO PEOPLE · WITH AI",
+        "title": "$400,000,000",
+        "kickerStyle": { "color": "#00FF41" },
+        "titleStyle": { "color": "#FFFFFF" }
+      }
+    },
+    "beat-default": {
+      "id": "beat-default",
+      "name": "Default",
+      "type": "motionScene",
+      "display": { "from": 3000, "to": 6000 },
+      "duration": 3000,
+      "details": {
+        "width": 1080, "height": 1920, "top": 0, "left": 0,
+        "opacity": 100, "transform": "none", "rotate": "0deg",
+        "blur": 0, "brightness": 100,
+        "flipX": false, "flipY": false, "visibility": "visible",
+        "borderRadius": 0, "borderWidth": 0, "borderColor": "transparent",
+        "boxShadow": { "color": "transparent", "x": 0, "y": 0, "blur": 0 }
+      },
+      "animations": {},
+      "metadata": {
+        "kind": "default",
+        "background": { "color": "#0A0B0A" },
+        "headline": { "color": "#00FF41" },
+        "icon": {}
+      }
+    }
+  }
+}
