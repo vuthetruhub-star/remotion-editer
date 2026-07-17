@@ -9,8 +9,9 @@
 1. **Trích frame** — `python assets/extract_frames.py <video> <out_dir> [--fps 1]` → ~1 ảnh/giây. AI ĐỌC các
    frame (Read tool đọc ảnh) để biết trên màn đang có gì: mặt người / screenshot / khoảng trống → quyết định
    chỗ đặt overlay & lúc nào zoom (mặt người tĩnh → punch-in; có screenshot → đừng đè overlay).
-2. **Transcript** — chạy editor (`pnpm dev`) và dùng `/api/transcribe`, hoặc bất kỳ Whisper nào, để lấy
-   word-level timestamps của video. (Không phụ thuộc skill ngoài — để repo tự đủ.)
+2. **Transcript (offline, tự đủ)** — `python assets/transcribe.py <video>` → `words.json` (word-level
+   timestamps) bằng faster-whisper cục bộ (`pip install faster-whisper` một lần, sau đó offline). Không
+   dùng dịch vụ ngoài. (Repo cũng có `/api/transcribe` nhưng đó là cloud designcombo — tránh nếu muốn tự đủ.)
 3. **Align script ↔ transcript** — AI ghép kịch bản text-thuần vào transcript (video ngắn, làm trong context):
    mỗi đoạn/câu kịch bản → `[start,end]` thật (giây). Sửa tên riêng theo kịch bản (Whisper hay nghe nhầm).
 4. **Lên beat plan** — với mỗi đoạn nội dung, áp [taste-rules.md](taste-rules.md) + [scene-catalog.md](scene-catalog.md):

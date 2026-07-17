@@ -106,6 +106,7 @@ Khi user yêu cầu dựng scene / làm motion cho một đoạn nội dung:
 
 **Helper (trong `assets/`):**
 - `extract_frames.py <video> <out_dir> [--fps 1]` — trích frame để AI "thấy" nội dung màn hình (pha 1).
+- `transcribe.py <video>` — transcript word-level OFFLINE (faster-whisper) → `words.json` (pha 1).
 - `fetch_logo.py "Brand1" "Brand2"` — tải logo brand từ Wikipedia vào thư mục đích (không cần API key).
 - `fetch_stock.py "<query>" <out_dir>` — tải stock video/ảnh từ Pexels (cần `PEXELS_API_KEY`, free).
 - Dùng để đổ asset thật vào `public/` của repo — asset thật luôn đọc "credible" hơn ảnh AI (xem image-style.md).

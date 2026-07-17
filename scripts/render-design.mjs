@@ -40,9 +40,11 @@ const duration = Object.values(trackItemsMap).reduce(
   0,
 );
 
-// Same rule as route.ts: transparent bg -> webm (alpha), else mp4.
-const isTransparentBg = !background || background.type !== "color" || background.value === "transparent";
-const ext = isTransparentBg ? "webm" : "mp4";
+// Default = opaque MP4 (the main use case: source video + overlays baked into a
+// finished video). Pass --transparent for a keyable WebM/vp9-alpha overlay export
+// (overlay-only designs meant to be composited over footage in CapCut/Resolve).
+const transparent = argv.includes("--transparent");
+const ext = transparent ? "webm" : "mp4";
 
 const output = positional[1]
   ? path.resolve(positional[1])
@@ -56,7 +58,7 @@ console.log(`[render-design] ${designPath} -> ${output}  (${(duration / 1000).to
 
 const child = spawn(
   process.execPath,
-  [scriptPath, inputBase64, output, String(scaleArg), isTransparentBg ? "1" : "0"],
+  [scriptPath, inputBase64, output, String(scaleArg), transparent ? "1" : "0"],
   { cwd: repoRoot, env: { ...process.env, FORCE_COLOR: "0" }, stdio: ["ignore", "pipe", "inherit"] },
 );
 

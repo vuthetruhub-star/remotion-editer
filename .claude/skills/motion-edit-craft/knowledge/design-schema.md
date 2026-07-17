@@ -106,6 +106,12 @@
 - Canh `display.from` khớp sự kiện motion (xem [sfx-rules.md](sfx-rules.md)). Nhạc bed = một audio item dài,
   volume thấp, duck thủ công ở đoạn có giọng.
 
+## Đầu ra render
+- `node scripts/render-design.mjs <design.json>` → **MP4 đục** (mặc định — video hoàn chỉnh: video nguồn +
+  overlay baked). Đây là luồng chính.
+- Thêm `--transparent` → **WebM/vp9-alpha** (overlay keyable để ghép ở CapCut/Resolve) — chỉ cho design
+  chỉ-có-overlay, không có video nền.
+
 ## Quy tắc khi AI ghi design.json
 - `display.from/to` (MS) = vị trí beat trên timeline; `appearSec` (giây) = trong beat.
 - Overlay motion và video nguồn nên ở **track riêng** để chồng lên nhau (motion phủ lên video).
