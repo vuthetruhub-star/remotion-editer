@@ -40,11 +40,28 @@
 "visibility":"visible","borderRadius":0,"borderWidth":0,"borderColor":"transparent",
 "boxShadow":{"color":"transparent","x":0,"y":0,"blur":0} }`
 
-## motionScene — metadata theo `kind` (5 kind hiện có)
+## motionScene — metadata theo `kind` (49 kind đã dựng)
 
 > Kind lạ / thiếu → editor render `default`. `bgColor:"transparent"` = keyable (mặc định). Style layer
 > (kicker/title/value…) dùng field của TextLayer: `color, x, y, scale, bold, italic, textAlign,
 > textTransform, lineHeight, maxWidth`.
+>
+> **Toàn bộ 49 kind khả dụng** (mô tả + khi nào dùng: xem [scene-catalog.md](scene-catalog.md)):
+> - Opener: `hook_title` `cinematic_title` `title_card`
+> - Text: `word_pop` `kinetic_statement` `callout` `quote_pull` `headline_card`
+> - Số/data: `stat_punch` `metric_reveal` `stat_grid` `bar_chart` `bar_overlay` `inline_chart` `dashboard_card`
+> - Sequence: `vertical_timeline` `horizontal_timeline` `progress_steps` `ticker_feed` `bulleted_list` `bullet_burst` `list` `calendar_months` `command_deck`
+> - Diagram: `concept_build` `flow_diagram` `network_diagram` `org_diagram` `layer_stack` `network_spread` `annotated_screenshot`
+> - People/logo: `portrait_burst` `tool_logo_burst` `agent_avatar_burst` `ratio_dots`
+> - Image/media: `image_card` `ai_image_on_grid` `split_reveal`
+> - Misc: `chat_message` `subscribe` `comparison_grid`
+> - ⚠️ Tránh trên Short (card/landscape): `vs_split` `lower_third` `chapter_bar` `keyword_chips` `side_panel` `corner_stat` `notification_toast`
+> - Base (native item type, KHÔNG phải motionScene): ảnh = `type:"image"`, video = `type:"video"`, icon = `type:"image"`.
+>
+> **Field metadata chính xác của MỖI kind** = đọc `defaultMeta` trong file module
+> `src/features/editor/player/items/motion-scenes/<kind>.tsx` (dấu gạch nối, vd `stat-punch.tsx`) — nó liệt
+> kê đúng field + kiểu. Quy ước chung: content/scalar để top-level; nhóm item lặp là `item1..N` / `step1..N` /
+> `bar1..N` / `node1..N` (mỗi cái một object con). `appearSec` = giây tương đối đầu beat.
 
 **hook_title** (mở đầu, title NGẮN ≤16 ký tự):
 ```jsonc
