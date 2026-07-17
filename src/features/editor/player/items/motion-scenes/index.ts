@@ -20,6 +20,13 @@ import { barChartModule } from "./bar-chart";
 import { barOverlayModule } from "./bar-overlay";
 import { inlineChartModule } from "./inline-chart";
 import { dashboardCardModule } from "./dashboard-card";
+import { progressStepsModule } from "./progress-steps";
+import { bulletedListModule } from "./bulleted-list";
+import { listModule } from "./list";
+import { horizontalTimelineModule } from "./horizontal-timeline";
+import { tickerFeedModule } from "./ticker-feed";
+import { commandDeckModule } from "./command-deck";
+import { calendarMonthsModule } from "./calendar-months";
 
 export type { MotionSceneModule } from "./types";
 
@@ -43,6 +50,13 @@ export const MOTION_SCENE_COMPONENTS: Record<string, MotionSceneModule> = {
   bar_overlay:       barOverlayModule,
   inline_chart:      inlineChartModule,
   dashboard_card:    dashboardCardModule,
+  progress_steps:    progressStepsModule,
+  bulleted_list:     bulletedListModule,
+  list:              listModule,
+  horizontal_timeline: horizontalTimelineModule,
+  ticker_feed:       tickerFeedModule,
+  command_deck:      commandDeckModule,
+  calendar_months:   calendarMonthsModule,
 };
 
 export const MOTION_SCENE_KINDS = Object.keys(MOTION_SCENE_COMPONENTS);
