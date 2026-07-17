@@ -10,6 +10,11 @@ import { calloutModule } from "./callout";
 import { quotePullModule } from "./quote-pull";
 import { titleCardModule } from "./title-card";
 import { metricRevealModule } from "./metric-reveal";
+import { cinematicTitleModule } from "./cinematic-title";
+import { kineticStatementModule } from "./kinetic-statement";
+import { headlineCardModule } from "./headline-card";
+import { keywordChipsModule } from "./keyword-chips";
+import { bulletBurstModule } from "./bullet-burst";
 
 export type { MotionSceneModule } from "./types";
 
@@ -23,6 +28,11 @@ export const MOTION_SCENE_COMPONENTS: Record<string, MotionSceneModule> = {
   quote_pull:        quotePullModule,
   title_card:        titleCardModule,
   metric_reveal:     metricRevealModule,
+  cinematic_title:   cinematicTitleModule,
+  kinetic_statement: kineticStatementModule,
+  headline_card:     headlineCardModule,
+  keyword_chips:     keywordChipsModule,
+  bullet_burst:      bulletBurstModule,
 };
 
 export const MOTION_SCENE_KINDS = Object.keys(MOTION_SCENE_COMPONENTS);
