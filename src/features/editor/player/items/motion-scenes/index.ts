@@ -41,6 +41,15 @@ import { portraitBurstModule } from "./portrait-burst";
 import { imageCardModule } from "./image-card";
 import { aiImageOnGridModule } from "./ai-image-on-grid";
 import { splitRevealModule } from "./split-reveal";
+import { chatMessageModule } from "./chat-message";
+import { subscribeModule } from "./subscribe";
+import { comparisonGridModule } from "./comparison-grid";
+import { vsSplitModule } from "./vs-split";
+import { lowerThirdModule } from "./lower-third";
+import { chapterBarModule } from "./chapter-bar";
+import { sidePanelModule } from "./side-panel";
+import { cornerStatModule } from "./corner-stat";
+import { notificationToastModule } from "./notification-toast";
 
 export type { MotionSceneModule } from "./types";
 
@@ -85,6 +94,15 @@ export const MOTION_SCENE_COMPONENTS: Record<string, MotionSceneModule> = {
   image_card:        imageCardModule,
   ai_image_on_grid:  aiImageOnGridModule,
   split_reveal:      splitRevealModule,
+  chat_message:      chatMessageModule,
+  subscribe:         subscribeModule,
+  comparison_grid:   comparisonGridModule,
+  vs_split:          vsSplitModule,
+  lower_third:       lowerThirdModule,
+  chapter_bar:       chapterBarModule,
+  side_panel:        sidePanelModule,
+  corner_stat:       cornerStatModule,
+  notification_toast: notificationToastModule,
 };
 
 export const MOTION_SCENE_KINDS = Object.keys(MOTION_SCENE_COMPONENTS);
