@@ -27,6 +27,13 @@ import { horizontalTimelineModule } from "./horizontal-timeline";
 import { tickerFeedModule } from "./ticker-feed";
 import { commandDeckModule } from "./command-deck";
 import { calendarMonthsModule } from "./calendar-months";
+import { flowDiagramModule } from "./flow-diagram";
+import { layerStackModule } from "./layer-stack";
+import { networkSpreadModule } from "./network-spread";
+import { networkDiagramModule } from "./network-diagram";
+import { orgDiagramModule } from "./org-diagram";
+import { conceptBuildModule } from "./concept-build";
+import { annotatedScreenshotModule } from "./annotated-screenshot";
 
 export type { MotionSceneModule } from "./types";
 
@@ -57,6 +64,13 @@ export const MOTION_SCENE_COMPONENTS: Record<string, MotionSceneModule> = {
   ticker_feed:       tickerFeedModule,
   command_deck:      commandDeckModule,
   calendar_months:   calendarMonthsModule,
+  flow_diagram:      flowDiagramModule,
+  layer_stack:       layerStackModule,
+  network_spread:    networkSpreadModule,
+  network_diagram:   networkDiagramModule,
+  org_diagram:       orgDiagramModule,
+  concept_build:     conceptBuildModule,
+  annotated_screenshot: annotatedScreenshotModule,
 };
 
 export const MOTION_SCENE_KINDS = Object.keys(MOTION_SCENE_COMPONENTS);
