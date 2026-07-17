@@ -15,6 +15,11 @@ import { kineticStatementModule } from "./kinetic-statement";
 import { headlineCardModule } from "./headline-card";
 import { keywordChipsModule } from "./keyword-chips";
 import { bulletBurstModule } from "./bullet-burst";
+import { statGridModule } from "./stat-grid";
+import { barChartModule } from "./bar-chart";
+import { barOverlayModule } from "./bar-overlay";
+import { inlineChartModule } from "./inline-chart";
+import { dashboardCardModule } from "./dashboard-card";
 
 export type { MotionSceneModule } from "./types";
 
@@ -33,6 +38,11 @@ export const MOTION_SCENE_COMPONENTS: Record<string, MotionSceneModule> = {
   headline_card:     headlineCardModule,
   keyword_chips:     keywordChipsModule,
   bullet_burst:      bulletBurstModule,
+  stat_grid:         statGridModule,
+  bar_chart:         barChartModule,
+  bar_overlay:       barOverlayModule,
+  inline_chart:      inlineChartModule,
+  dashboard_card:    dashboardCardModule,
 };
 
 export const MOTION_SCENE_KINDS = Object.keys(MOTION_SCENE_COMPONENTS);
