@@ -20,6 +20,13 @@ Video Editor application using React and TypeScript.
 
 [![](./images/combo.png)](https://github.com/designcombo/react-video-editor)
 
+## 📖 Bản D1A Motion Editor — hướng dẫn
+
+- **[HOW-TO-USE.md](HOW-TO-USE.md)** — cách dùng end-to-end: script + video → Short hoàn chỉnh (AI làm hộ hoặc tự dựng), 49 kind, render, chuẩn bị asset.
+- **[HOW-TO-START.md](HOW-TO-START.md)** — cài đặt lần đầu.
+- **[src/brand-docs/HOW-TO-ADD-MOTION.md](src/brand-docs/HOW-TO-ADD-MOTION.md)** — thêm kind motion mới (cho dev).
+- **`.claude/skills/motion-edit-craft/`** — skill AI: tri thức biên tập/taste + workflow + design-schema.
+
 ## ✨ Features
 
 - 🎬 Timeline Editing: Arrange and trim media on a visual timeline.
