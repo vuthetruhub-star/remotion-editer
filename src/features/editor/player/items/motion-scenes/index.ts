@@ -6,6 +6,10 @@ import { hookTitleModule } from "./hook-title";
 import { statPunchModule } from "./stat-punch";
 import { wordPopModule } from "./word-pop";
 import { verticalTimelineModule } from "./vertical-timeline";
+import { calloutModule } from "./callout";
+import { quotePullModule } from "./quote-pull";
+import { titleCardModule } from "./title-card";
+import { metricRevealModule } from "./metric-reveal";
 
 export type { MotionSceneModule } from "./types";
 
@@ -15,6 +19,10 @@ export const MOTION_SCENE_COMPONENTS: Record<string, MotionSceneModule> = {
   stat_punch:        statPunchModule,
   word_pop:          wordPopModule,
   vertical_timeline: verticalTimelineModule,
+  callout:           calloutModule,
+  quote_pull:        quotePullModule,
+  title_card:        titleCardModule,
+  metric_reveal:     metricRevealModule,
 };
 
 export const MOTION_SCENE_KINDS = Object.keys(MOTION_SCENE_COMPONENTS);

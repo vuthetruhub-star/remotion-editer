@@ -100,6 +100,18 @@
 - Giữ **headroom**: khung đừng quá thấp (mất đỉnh đầu) hay quá cao. Bias khung xuống một chút để lộ đỉnh đầu.
 - Pan kẹp trong cửa sổ crop an toàn để lớp scale không lộ viền đen.
 
+## 8b. Punch-in/out video — DÙNG KHI NÀO (B4)
+
+Zoom video (`details.zoom={from,to}`) dùng để **nhấn mạnh** — KHÔNG rải đều:
+- **Chỉ dùng cho câu nhấn mạnh / đoạn có giá trị** (một tuyên bố mạnh, một con số, một pivot). Đoạn thường
+  giữ scale 1.0.
+- **Punch-in phải VÀO TRƯỚC câu đó** — zoom bắt đầu ngay trước khi người nói vào câu nhấn, để cú phóng
+  *dẫn* vào khoảnh khắc (không phóng sau khi câu đã trôi qua). Cắt video thành item riêng cho đoạn nhấn:
+  item bắt đầu ~0.3–0.5s trước câu, `zoom:{from:1.0,to:1.06–1.10}` để phóng tới đỉnh đúng lúc câu lands.
+- **Punch-out (về 1.0)** sau khi câu kết thúc để "thả" — làm bằng item kế tiếp `zoom:{from:1.08,to:1.0}`,
+  hoặc để item nhấn ngắn rồi item thường tiếp theo ở scale 1.0.
+- Mức: 1.06 cho nhấn nhẹ, 1.08–1.10 cho con số/tuyên bố lớn. Đừng quá 1.12 (vỡ nét, lộ crop).
+
 ---
 
 ## 9. Self-check motion
