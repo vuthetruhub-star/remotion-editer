@@ -34,6 +34,10 @@ import { networkDiagramModule } from "./network-diagram";
 import { orgDiagramModule } from "./org-diagram";
 import { conceptBuildModule } from "./concept-build";
 import { annotatedScreenshotModule } from "./annotated-screenshot";
+import { ratioDotsModule } from "./ratio-dots";
+import { agentAvatarBurstModule } from "./agent-avatar-burst";
+import { toolLogoBurstModule } from "./tool-logo-burst";
+import { portraitBurstModule } from "./portrait-burst";
 
 export type { MotionSceneModule } from "./types";
 
@@ -71,6 +75,10 @@ export const MOTION_SCENE_COMPONENTS: Record<string, MotionSceneModule> = {
   org_diagram:       orgDiagramModule,
   concept_build:     conceptBuildModule,
   annotated_screenshot: annotatedScreenshotModule,
+  ratio_dots:        ratioDotsModule,
+  agent_avatar_burst: agentAvatarBurstModule,
+  tool_logo_burst:   toolLogoBurstModule,
+  portrait_burst:    portraitBurstModule,
 };
 
 export const MOTION_SCENE_KINDS = Object.keys(MOTION_SCENE_COMPONENTS);
