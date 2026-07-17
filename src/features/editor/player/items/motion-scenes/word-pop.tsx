@@ -77,7 +77,9 @@ function Component({ f, fps, durationInFrames, data }: {
               fontFamily: "Geist, system-ui, sans-serif", fontWeight: 800, fontSize: 92,
               lineHeight: 1.0, textAlign: "center", whiteSpace: "pre-line", maxWidth: "88%",
               color: it.accent ? "#00FF41" : "#FFFFFF",
-              textShadow: "0 2px 18px rgba(0,0,0,0.55)",
+              // chroma-safe: viền ĐẶC (không blur) cho dễ đọc, không toả ra nền chroma
+              WebkitTextStroke: "2px rgba(0,0,0,0.55)",
+              paintOrder: "stroke fill",
             }}
           >
             {it.text}

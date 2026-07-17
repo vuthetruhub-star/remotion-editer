@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { dispatch } from "@designcombo/events";
-import { HISTORY_UNDO, HISTORY_REDO, DESIGN_RESIZE } from "@designcombo/state";
+import { HISTORY_UNDO, HISTORY_REDO } from "@designcombo/state";
 import { Icons } from "@/components/shared/icons";
 import {
   Popover,
@@ -13,7 +13,6 @@ import {
   Download,
   FilePlus,
   Keyboard,
-  ProportionsIcon,
   ShareIcon,
   Upload
 } from "lucide-react";
@@ -82,7 +81,10 @@ export default function Navbar({
     try {
       const payload = JSON.parse(await file.text());
       if (!payload?.trackItemsMap || !payload?.tracks) {
-        window.alert("Invalid design JSON: missing trackItemsMap / tracks.");
+        window.alert(
+          `"${file.name}" is not a design JSON (missing trackItemsMap / tracks).\n` +
+          `Pick samples/demo-design.json — not package.json / components.json / tsconfig.json.`
+        );
         return;
       }
       clearSavedDesign();
@@ -334,106 +336,5 @@ const DownloadPopover = ({ stateManager }: { stateManager: StateManager }) => {
   );
 };
 
-interface ResizeOptionProps {
-  label: string;
-  icon: string;
-  value: ResizeValue;
-  description: string;
-}
-
-interface ResizeValue {
-  width: number;
-  height: number;
-  name: string;
-}
-
-const RESIZE_OPTIONS: ResizeOptionProps[] = [
-  {
-    label: "16:9",
-    icon: "landscape",
-    description: "YouTube ads",
-    value: {
-      width: 1920,
-      height: 1080,
-      name: "16:9"
-    }
-  },
-  {
-    label: "9:16",
-    icon: "portrait",
-    description: "TikTok, YouTube Shorts",
-    value: {
-      width: 1080,
-      height: 1920,
-      name: "9:16"
-    }
-  },
-  {
-    label: "1:1",
-    icon: "square",
-    description: "Instagram, Facebook posts",
-    value: {
-      width: 1080,
-      height: 1080,
-      name: "1:1"
-    }
-  }
-];
-
-const ResizeVideo = () => {
-  const handleResize = (options: ResizeValue) => {
-    dispatch(DESIGN_RESIZE, {
-      payload: {
-        ...options
-      }
-    });
-  };
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button className="z-10 h-7 gap-2" variant="outline" size={"sm"}>
-          <ProportionsIcon className="h-4 w-4" />
-          <div>Resize</div>
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="z-[250] w-60 px-2.5 py-3">
-        <div className="text-sm">
-          {RESIZE_OPTIONS.map((option, index) => (
-            <ResizeOption
-              key={index}
-              label={option.label}
-              icon={option.icon}
-              value={option.value}
-              handleResize={handleResize}
-              description={option.description}
-            />
-          ))}
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
-};
-
-const ResizeOption = ({
-  label,
-  icon,
-  value,
-  description,
-  handleResize
-}: ResizeOptionProps & { handleResize: (payload: ResizeValue) => void }) => {
-  const Icon = Icons[icon as "text"];
-  return (
-    <div
-      onClick={() => handleResize(value)}
-      className="flex cursor-pointer items-center rounded-md p-2 hover:bg-zinc-50/10"
-    >
-      <div className="w-8 text-muted-foreground">
-        <Icon size={20} />
-      </div>
-      <div>
-        <div>{label}</div>
-        <div className="text-xs text-muted-foreground">{description}</div>
-      </div>
-    </div>
-  );
-};
+// Aspect ratio is LOCKED to 9:16 (1080×1920) for this project — the aspect-switch
+// UI (16:9 / 1:1) was removed. All motion-scene kinds are tuned for 9:16.

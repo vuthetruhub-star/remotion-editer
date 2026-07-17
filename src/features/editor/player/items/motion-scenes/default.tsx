@@ -75,10 +75,11 @@ function Component({ f, data }: { f: number; data: Meta }) {
   );
 }
 
+// tabs 1-phần tử → panel ghi vào metadata.<key>.* (khớp parseMeta đọc lồng d.background/…)
 const panelSections: PanelSection[] = [
-  { title: "Background", schema: BackgroundSchema, widgets: BACKGROUND_WIDGETS },
-  { title: "Headline",   schema: TextLayerSchema,  widgets: TEXT_LAYER_WIDGETS },
-  { title: "Icon",       schema: AssetLayerSchema, widgets: ASSET_LAYER_WIDGETS },
+  { title: "Background", schema: BackgroundSchema, widgets: BACKGROUND_WIDGETS, tabs: ["background"] },
+  { title: "Headline",   schema: TextLayerSchema,  widgets: TEXT_LAYER_WIDGETS, tabs: ["headline"] },
+  { title: "Icon",       schema: AssetLayerSchema, widgets: ASSET_LAYER_WIDGETS, tabs: ["icon"] },
 ];
 
 export const defaultModule: MotionSceneModule = {

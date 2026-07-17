@@ -81,7 +81,8 @@ function Component({ f, fps, data }: { f: number; fps: number; durationInFrames:
               position: "absolute", left: "34%", top: `${yFrac(i, n) * 100}%`, maxWidth: "58%",
               transform: `translate(${18 * (1 - textIn)}px, -50%)`, opacity: textIn,
               fontFamily: "Geist, system-ui, sans-serif", fontWeight: 600, fontSize: 48, color: "#FFFFFF",
-              textShadow: "0 2px 14px rgba(0,0,0,0.5)",
+              // chroma-safe: viền đặc thay cho shadow-blur
+              WebkitTextStroke: "1.5px rgba(0,0,0,0.45)", paintOrder: "stroke fill",
             }}>{s.heading}</div>
           </div>
         );

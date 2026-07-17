@@ -45,9 +45,11 @@ function SectionRenderer({ section, meta, trackItem }: {
 
   if (section.tabs) {
     const active = activeTab ?? section.tabs[0];
+    const single = section.tabs.length === 1; // 1 nhóm lồng → không cần nút tab
     return (
       <div className="flex flex-col gap-2">
         <Label className="font-sans text-xs font-semibold">{section.title}</Label>
+        {!single && (
         <div className="grid grid-cols-4 gap-1.5">
           {section.tabs.map((tab) => (
             <button
@@ -65,6 +67,7 @@ function SectionRenderer({ section, meta, trackItem }: {
             </button>
           ))}
         </div>
+        )}
         <AutoPanel
           schema={section.schema}
           widgets={section.widgets}
