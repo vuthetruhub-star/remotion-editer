@@ -38,6 +38,9 @@ import { ratioDotsModule } from "./ratio-dots";
 import { agentAvatarBurstModule } from "./agent-avatar-burst";
 import { toolLogoBurstModule } from "./tool-logo-burst";
 import { portraitBurstModule } from "./portrait-burst";
+import { imageCardModule } from "./image-card";
+import { aiImageOnGridModule } from "./ai-image-on-grid";
+import { splitRevealModule } from "./split-reveal";
 
 export type { MotionSceneModule } from "./types";
 
@@ -79,6 +82,9 @@ export const MOTION_SCENE_COMPONENTS: Record<string, MotionSceneModule> = {
   agent_avatar_burst: agentAvatarBurstModule,
   tool_logo_burst:   toolLogoBurstModule,
   portrait_burst:    portraitBurstModule,
+  image_card:        imageCardModule,
+  ai_image_on_grid:  aiImageOnGridModule,
+  split_reveal:      splitRevealModule,
 };
 
 export const MOTION_SCENE_KINDS = Object.keys(MOTION_SCENE_COMPONENTS);
