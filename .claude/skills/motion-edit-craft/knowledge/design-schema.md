@@ -115,6 +115,12 @@
 ```
 - `words[].start/end` là MS **tương đối so với `display.from` của caption item**. Cadence/preset: xem
   [caption-rules.md](caption-rules.md).
+- ⚠️ **Caption type KHÔNG đáng tin khi render** (nhồi cả transcript vào 1 item → đổ hết cùng lúc; set field
+  windowing → không hiện gì). Để BAKE caption word-by-word, DÙNG kind **`caption_word`** (motionScene, kiểm
+  soát hoàn toàn): mỗi cụm (~2–3 từ) = 1 item `{"kind":"caption_word","text":"...","vertical":0.58,"size":56,
+  "accent":true/false}`, `display`=[start,end] cụm. **TẮT caption dưới beat chữ nhiều** (word_pop/hook_title/
+  vertical_timeline/open_loop_stack) — bỏ cụm rơi vào các khoảng đó (caption-rules §5). Xem generator mẫu
+  `~/edit-taste-analysis/0605/build.mjs`.
 
 ## audio item (SFX / nhạc bed)
 ```jsonc
@@ -125,10 +131,22 @@
   volume thấp, duck thủ công ở đoạn có giọng.
 
 ## Đầu ra render
-- `node scripts/render-design.mjs <design.json>` → **MP4 đục** (mặc định — video hoàn chỉnh: video nguồn +
-  overlay baked). Đây là luồng chính.
-- Thêm `--transparent` → **WebM/vp9-alpha** (overlay keyable để ghép ở CapCut/Resolve) — chỉ cho design
-  chỉ-có-overlay, không có video nền.
+- `node scripts/render-design.mjs <design.json>` → **MP4 đục** (mặc định). `--scale` phải cho ra kích thước
+  NGUYÊN (vd 1080×1920×1.3333=2559.9 → LỖI; dùng `--scale 1` rồi phóng ở ffmpeg).
+- ⚠️ **`--transparent` (WebM/vp9-alpha) hiện HỎNG** — ra alpha ĐỤC (nền đen đặc), không key được. Đừng dựa vào nó.
+
+**CÁCH XUẤT VIDEO HOÀN CHỈNH đã kiểm chứng (overlay + video nguồn, giữ tiếng):**
+```bash
+# 1) render overlay (design chỉ-overlay, nền đen mặc định) ở scale nguyên
+node scripts/render-design.mjs design.json overlay-black.mp4 --scale 1
+# 2) key nền đen + phóng khớp video + ghép lên video gốc (giữ audio gốc)
+ffmpeg -i source.mp4 -i overlay-black.mp4 -filter_complex \
+ "[1:v]scale=<W>:<H>,colorkey=0x000000:0.01:0.0[ov];[0:v][ov]overlay=format=auto:eof_action=pass[v]" \
+ -map "[v]" -map 0:a? -c:v libx264 -crf 19 -pix_fmt yuv420p -c:a aac final.mp4
+```
+- `colorkey` tolerance **0.01** (chặt) → chỉ key đen tuyệt đối, GIỮ viền tối của chữ (WebkitTextStroke) làm tương phản trên nền sáng.
+- Pill nền đục (floating_stats rgba ~#121) KHÔNG bị key → thành nền chip có chủ ý (đọc rõ).
+- Đây là luồng chính hiện tại thay cho `--transparent`. Ví dụ đầy đủ: `~/edit-taste-analysis/0605/`.
 
 ## Quy tắc khi AI ghi design.json
 - `display.from/to` (MS) = vị trí beat trên timeline; `appearSec` (giây) = trong beat.
