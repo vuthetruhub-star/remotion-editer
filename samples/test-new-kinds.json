@@ -1,0 +1,37 @@
+{
+  "id": "test-new-kinds",
+  "fps": 30,
+  "size": { "width": 1080, "height": 1920 },
+  "tracks": [
+    { "id": "t1", "type": "video", "name": "T", "accepts": ["motionScene"], "items": ["b-scaffold", "b-loop"], "magnetic": false, "static": false }
+  ],
+  "trackItemIds": ["b-scaffold", "b-loop"],
+  "transitionsMap": {},
+  "trackItemsMap": {
+    "b-scaffold": {
+      "id": "b-scaffold", "name": "Scaffold", "type": "motionScene",
+      "display": { "from": 0, "to": 5000 }, "duration": 5000,
+      "details": { "width": 1080, "height": 1920, "top": 0, "left": 0, "opacity": 100, "transform": "none", "rotate": "0deg", "blur": 0, "brightness": 100, "flipX": false, "flipY": false, "visibility": "visible", "borderRadius": 0, "borderWidth": 0, "borderColor": "transparent", "boxShadow": { "color": "transparent", "x": 0, "y": 0, "blur": 0 } },
+      "animations": {},
+      "metadata": { "kind": "structure_scaffold", "bgColor": "#0A0B0A", "side": "right", "track": "Hook,Lead,Body 1,Body 2,Body 3,CTA", "trackColor": "#FFFFFF",
+        "row1": { "label": "Hook:", "color": "#FF3B30", "len": 0.95, "appearSec": 0.0 },
+        "row2": { "label": "Lead:", "color": "#FFCC00", "len": 0.9, "appearSec": 0.4 },
+        "row3": { "label": "Body 1:", "color": "#34AADC", "len": 0.85, "appearSec": 0.9 },
+        "row4": { "label": "Open loop 1:", "color": "#5E5CE6", "spinner": true, "appearSec": 1.6 },
+        "row5": { "label": "Body 2:", "color": "#3B5BDB", "len": 0.8, "appearSec": 2.2 },
+        "row6": { "label": "Open loop 2:", "color": "#5E5CE6", "spinner": true, "appearSec": 2.9 },
+        "row7": { "label": "Body 3:", "color": "#1E3A8A", "len": 0.75, "appearSec": 3.4 },
+        "row8": { "label": "CTA:", "color": "#34C759", "len": 1.0, "appearSec": 4.0 } }
+    },
+    "b-loop": {
+      "id": "b-loop", "name": "OpenLoop", "type": "motionScene",
+      "display": { "from": 5000, "to": 10000 }, "duration": 5000,
+      "details": { "width": 1080, "height": 1920, "top": 0, "left": 0, "opacity": 100, "transform": "none", "rotate": "0deg", "blur": 0, "brightness": 100, "flipX": false, "flipY": false, "visibility": "visible", "borderRadius": 0, "borderWidth": 0, "borderColor": "transparent", "boxShadow": { "color": "transparent", "x": 0, "y": 0, "blur": 0 } },
+      "animations": {},
+      "metadata": { "kind": "open_loop_stack", "bgColor": "#0A0B0A", "vertical": 0.1, "boxed": true, "color": "#FFFFFF",
+        "line1": { "text": "Yet that's not the craziest part…", "appearSec": 0.3 },
+        "line2": { "text": "And funnily enough in 1893 Richard Feynman…", "appearSec": 1.6 },
+        "line3": { "text": "But we couldn't have expected it got this bad…", "appearSec": 3.0 } }
+    }
+  }
+}

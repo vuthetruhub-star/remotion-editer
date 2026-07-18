@@ -40,13 +40,13 @@
 "visibility":"visible","borderRadius":0,"borderWidth":0,"borderColor":"transparent",
 "boxShadow":{"color":"transparent","x":0,"y":0,"blur":0} }`
 
-## motionScene — metadata theo `kind` (49 kind đã dựng)
+## motionScene — metadata theo `kind` (54 kind đã dựng)
 
 > Kind lạ / thiếu → editor render `default`. `bgColor:"transparent"` = keyable (mặc định). Style layer
 > (kicker/title/value…) dùng field của TextLayer: `color, x, y, scale, bold, italic, textAlign,
 > textTransform, lineHeight, maxWidth`.
 >
-> **Toàn bộ 49 kind khả dụng** (mô tả + khi nào dùng: xem [scene-catalog.md](scene-catalog.md)):
+> **Toàn bộ 54 kind khả dụng** (mô tả + khi nào dùng: xem [scene-catalog.md](scene-catalog.md)):
 > - Opener: `hook_title` `cinematic_title` `title_card`
 > - Text: `word_pop` `kinetic_statement` `callout` `quote_pull` `headline_card`
 > - Số/data: `stat_punch` `metric_reveal` `stat_grid` `bar_chart` `bar_overlay` `inline_chart` `dashboard_card`
@@ -55,6 +55,7 @@
 > - People/logo: `portrait_burst` `tool_logo_burst` `agent_avatar_burst` `ratio_dots`
 > - Image/media: `image_card` `ai_image_on_grid` `split_reveal`
 > - Misc: `chat_message` `subscribe` `comparison_grid`
+> - Explainer scaffold (đa-màu theo vai trò, học từ reference): `structure_scaffold` `open_loop_stack` `antithesis_split` `floating_stats` `doodle_scribble`
 > - ⚠️ Tránh trên Short (card/landscape): `vs_split` `lower_third` `chapter_bar` `keyword_chips` `side_panel` `corner_stat` `notification_toast`
 > - Base (native item type, KHÔNG phải motionScene): ảnh = `type:"image"`, video = `type:"video"`, icon = `type:"image"`.
 >

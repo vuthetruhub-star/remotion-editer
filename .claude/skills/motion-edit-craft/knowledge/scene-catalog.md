@@ -330,6 +330,91 @@
 
 ---
 
+## K. STRUCTURE / EXPLAINER (học từ reference — ĐA-MÀU theo vai trò)
+
+> 🎨 **Ngoại lệ luật "1 lime/frame":** với nội dung **explainer / dạy cấu trúc**, cho phép **mã màu theo VAI
+> TRÒ** (mỗi vai trò một hue cố định) thay vì 1 accent. Vẫn chroma-safe (màu ĐẶC, không blur/glow). Học từ 6 IG
+> reel cùng 1 creator dạy short-form (2026-07-18). Ngoài explainer vẫn giữ 1 lime `#00FF41`.
+>
+> **MẪU 12 mục — mỗi kind PHẢI đủ để (a) tái tạo bằng số, (b) biết khi nào/khi không dùng, (c) có ví dụ chạy được:**
+> `① Trạng thái · ② DÙNG KHI · ③ KHÔNG DÙNG KHI · ④ Bố cục(định lượng) · ⑤ Động(ms/easing) · ⑥ Zoom gợi ý ·
+> ⑦ SFX · ⑧ Caption đi kèm · ⑨ Fields · ⑩ Ví dụ · ⑪ Chroma/9:16 · ⑫ Học từ`. Toạ độ = %khung 1080×1920 (góc
+> trái-trên); size = px @1080; thời gian = giây so đầu beat, entrance = ms. Số là **ước lượng**, chốt khi test.
+
+### `structure_scaffold` 🟢▲ — "mục lục" cấu trúc build dần + thanh progress đáy
+- **①** ✅ đã dựng.
+- **②** Video DẠY một khung có tên các phần (Hook→Lead→Body→CTA; "3 loại X"); muốn overlay "mục lục" build dần theo lời + thanh tiến trình thường trực báo đang ở đâu.
+- **③** Nội dung không có cấu trúc-đặt-tên (kể chuyện tự do); chỉ 1–2 mục → `word_pop`. Không đặt đè mặt.
+- **④** Cột phải, top 6%, rộng 52%; hàng = nhãn 30px/700 (viền 1px) + thanh cao 12px (spinner Ø34, viền 4px); gap dọc 20px. Track đáy: left6–right6%, bottom 16%, seg cao 6px/gap10, label 18px. Màu vai trò: Hook `#FF3B30` · Lead `#FFCC00` · Body `#34AADC/#3B5BDB` · CTA `#34C759`.
+- **⑤** Hàng fade+rise(14px) 350ms tại `appearSec`; thanh scaleX 0→1 trong 100–600ms sau appear; spinner xoay 360°/s; track fill = round(progress×segs). Hàng GIỮ tới hết.
+- **⑥ Zoom:** static hold (bỏ `zoom`) — overlay nặng, để đồ hoạ đọc.
+- **⑦ SFX:** tick nhẹ mỗi hàng xuất hiện; whoosh khi track tiến 1 seg.
+- **⑧ Caption:** có (word-punch giữa màn) — nhưng cột ở PHẢI nên không đè.
+- **⑨ Fields:** `content{bgColor, side(right|left), track, trackColor}` · `row1..8{label, color, spinner, len(0..1), appearSec}`.
+- **⑩ Ví dụ:** `{"kind":"structure_scaffold","side":"right","track":"Hook,Lead,Body,CTA","row1":{"label":"Hook:","color":"#FF3B30","appearSec":0},"row2":{"label":"Lead:","color":"#FFCC00","appearSec":0.5},"row3":{"label":"Open loop:","color":"#5E5CE6","spinner":true,"appearSec":1.2}}`
+- **⑪** Màu đặc, viền chữ đặc, spinner arc đặc; `bgColor:"transparent"` khi overlay.
+- **⑫** `DambEp1igDW`, `Daq-5E0jrYw`.
+
+### `open_loop_stack` 🟢▲ — dòng "nhử" tích luỹ trong khung bo góc
+- **①** ✅ đã dựng.
+- **②** Tạo tò mò dồn nén — 2–4 câu teaser CHƯA giải quyết chồng lên nhau, đặt giữa Body để giữ chân trước khi trả lời.
+- **③** Câu trả lời ngay (không teaser); >4 dòng; không cho CTA.
+- **④** Khung bo góc left6–right6%, top=`vertical`(8%), padding 26/28, viền 2px rgba(255,255,255,.5), radius 22; dòng 40px/600, gap 16, kết mỗi dòng "…".
+- **⑤** Mỗi dòng fade+rise(12px) 400ms tại `appearSec` (tích luỹ, giữ); khung fade-in 400ms theo dòng đầu.
+- **⑥ Zoom:** static hoặc drift rất chậm 1.0→1.03.
+- **⑦ SFX:** "type/tick" mỗi dòng land; riser trầm dồn tension.
+- **⑧ Caption:** có — dòng teaser Ở TRÊN, caption giữa, không đè.
+- **⑨ Fields:** `content{bgColor, vertical, boxed, color}` · `line1..4{text, appearSec}`.
+- **⑩ Ví dụ:** `{"kind":"open_loop_stack","vertical":0.08,"line1":{"text":"Yet that's not the craziest part…","appearSec":0.2},"line2":{"text":"And in 1893 Richard Feynman…","appearSec":1.6},"line3":{"text":"We couldn't have expected this…","appearSec":3.0}}`
+- **⑪** Viền + text đặc; flat-alpha nội vi OK.
+- **⑫** `DambEp1igDW`.
+
+### `antithesis_split` 🟢▲ — 2 vế đối lập quanh gạch đứt dọc
+- **①** ✅ đã dựng.
+- **②** Đối lập 2 vế ngắn ("A không phải X, mà là Y"; "hại sức khoẻ | mài dao") — antithesis/tension. Đặt nửa dưới.
+- **③** >2 vế → `comparison_grid`; nhiều tiêu chí → bảng.
+- **④** Gạch đứt dọc x=50%, cao 14% quanh `vertical`(0.78); 2 khối chữ mỗi bên ~40% rộng, 34px/600 trắng viền; tuỳ chọn 2 vòng tròn (đặc trái/rỗng phải) Ø120.
+- **⑤** Vế trái fade+rise 300ms → vế phải +0.3s; divider vẽ scaleY 300ms; vòng tròn pop 150ms.
+- **⑥ Zoom:** static, hoặc punch rất nhẹ vào lúc pivot ("mà là").
+- **⑦ SFX:** 2 nốt đối (trầm→cao) cho 2 vế, hoặc 1 "hit" khi divider vẽ xong.
+- **⑧ Caption:** tránh y72–86% (nhường split) → caption cao hơn hoặc tắt đoạn này.
+- **⑨ Fields:** `content{bgColor, dividerColor(#FFD400), dashed, vertical(0.78), showCircles}` · `left{text,appearSec}` · `right{text,appearSec}`.
+- **⑩ Ví dụ:** `{"kind":"antithesis_split","showCircles":true,"left":{"text":"terrible for your health","appearSec":0.2},"right":{"text":"sharpening your knives","appearSec":0.5}}`
+- **⑪** Divider màu đặc gạch đứt; text viền đặc; vẽ bằng scaleY.
+- **⑫** `Daei0qakSON`.
+
+### `floating_stats` 🟢▲ — badge số bay rải quanh subject
+- **①** ✅ đã dựng.
+- **②** Nhiều con số "sống" rải ra (views đang chạy, giá, chỉ số) — cảm giác dồn dập.
+- **③** 1 số hero → `stat_punch`; số cần trục so sánh → `bar/stat_grid`. Không đè mặt.
+- **④** 4–6 badge deterministic (index→ (12,58)(78,60)(20,74)(70,78)(38,88)(86,40)%), tránh mặt. Badge = pill nền `rgba(18,20,18,.88)` bo 14, số 30px/700 trắng, glyph accent (`eye`◉/`chart`↗/`dollar`$).
+- **⑤** Mỗi badge pop scale .8→1 120ms tại `appearSec`, stagger 0.15–0.3s; float drift ±6px (sin theo f); giữ 2–3s.
+- **⑥ Zoom:** static hold (nhiều badge quanh mặt).
+- **⑦ SFX:** "blip/pop" nhỏ mỗi badge (theo stagger).
+- **⑧ Caption:** có ở giữa; badge đã né vùng mặt & caption.
+- **⑨ Fields:** `content{bgColor, accent}` · `stat1..6{value, glyph(eye|chart|dollar|none), appearSec}`.
+- **⑩ Ví dụ:** `{"kind":"floating_stats","glyph":"eye","stat1":{"value":"9000","appearSec":0.1},"stat2":{"value":"2200","appearSec":0.3},"stat3":{"value":"11.5K","appearSec":0.5}}`
+- **⑪** Pill nền đục, số viền đặc; drift bằng transform.
+- **⑫** `Daq-5E0jrYw`.
+
+### `doodle_scribble` 🟢▲ — nét vẽ tay (squiggle/circle/arrow/underline)
+- **①** ✅ đã dựng.
+- **②** Nhấn cảm xúc/năng lượng/rối, khoanh vùng, hoặc mũi tên chỉ — đè lên ảnh/từ/subject.
+- **③** Cần nghiêm túc/chính xác (số liệu). Tối đa 1 doodle/beat.
+- **④** SVG path tại `x,y`(fraction), `scale`; stroke 7px màu `#FFD400`; `variant`: squiggle/circle/arrow/underline. Khung vẽ ~260×scale px.
+- **⑤** Vẽ draw-on bằng `strokeDashoffset` tính THEO FRAME (không CSS transition) trong `drawSec` (300–500ms); giữ.
+- **⑥ Zoom:** thường trên shot có punch nhẹ; doodle không cần zoom riêng.
+- **⑦ SFX:** "marker/scribble" khi vẽ.
+- **⑧ Caption:** có; doodle chỉ khoanh/nhấn, không thay caption.
+- **⑨ Fields:** `content{color, variant, x, y, scale, drawSec}`.
+- **⑩ Ví dụ:** `{"kind":"doodle_scribble","variant":"circle","x":0.5,"y":0.4,"scale":1.5,"drawSec":0.4}`
+- **⑪** Stroke màu đặc; draw-on qua dashoffset theo frame (pathLength=1).
+- **⑫** `Daf3iwtk7Wi`.
+
+> `loading_spinner` = biến thể hàng `spinner:true` trong `structure_scaffold` (arc viền đặc xoay), KHÔNG kind rời.
+
+---
+
 ## J. HỆ THỐNG NỀN (không phải "kind" — áp global, tái dựng 1 lần)
 
 - **Backgrounds (grid nền):** grid "cloudy" — mask radial blob layered để grid rõ từng mảng, mờ dần giữa các

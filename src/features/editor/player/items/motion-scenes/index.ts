@@ -50,6 +50,11 @@ import { chapterBarModule } from "./chapter-bar";
 import { sidePanelModule } from "./side-panel";
 import { cornerStatModule } from "./corner-stat";
 import { notificationToastModule } from "./notification-toast";
+import { structureScaffoldModule } from "./structure-scaffold";
+import { openLoopStackModule } from "./open-loop-stack";
+import { antithesisSplitModule } from "./antithesis-split";
+import { floatingStatsModule } from "./floating-stats";
+import { doodleScribbleModule } from "./doodle-scribble";
 
 export type { MotionSceneModule } from "./types";
 
@@ -103,6 +108,11 @@ export const MOTION_SCENE_COMPONENTS: Record<string, MotionSceneModule> = {
   side_panel:        sidePanelModule,
   corner_stat:       cornerStatModule,
   notification_toast: notificationToastModule,
+  structure_scaffold: structureScaffoldModule,
+  open_loop_stack:    openLoopStackModule,
+  antithesis_split:   antithesisSplitModule,
+  floating_stats:     floatingStatsModule,
+  doodle_scribble:    doodleScribbleModule,
 };
 
 export const MOTION_SCENE_KINDS = Object.keys(MOTION_SCENE_COMPONENTS);

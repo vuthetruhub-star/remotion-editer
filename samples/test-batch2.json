@@ -1,0 +1,33 @@
+{
+  "id": "test-batch2",
+  "fps": 30,
+  "size": { "width": 1080, "height": 1920 },
+  "tracks": [
+    { "id": "t1", "type": "video", "name": "T", "accepts": ["motionScene"], "items": ["a", "b", "c"], "magnetic": false, "static": false }
+  ],
+  "trackItemIds": ["a", "b", "c"],
+  "transitionsMap": {},
+  "trackItemsMap": {
+    "a": {
+      "id": "a", "name": "Antithesis", "type": "motionScene",
+      "display": { "from": 0, "to": 4000 }, "duration": 4000,
+      "details": { "width": 1080, "height": 1920, "top": 0, "left": 0, "opacity": 100, "transform": "none", "rotate": "0deg", "blur": 0, "brightness": 100, "flipX": false, "flipY": false, "visibility": "visible", "borderRadius": 0, "borderWidth": 0, "borderColor": "transparent", "boxShadow": { "color": "transparent", "x": 0, "y": 0, "blur": 0 } },
+      "animations": {},
+      "metadata": { "kind": "antithesis_split", "bgColor": "#0A0B0A", "showCircles": true, "vertical": 0.5, "left": { "text": "terrible for your health", "appearSec": 0.2 }, "right": { "text": "sharpening your knives", "appearSec": 0.6 } }
+    },
+    "b": {
+      "id": "b", "name": "FloatingStats", "type": "motionScene",
+      "display": { "from": 4000, "to": 8000 }, "duration": 4000,
+      "details": { "width": 1080, "height": 1920, "top": 0, "left": 0, "opacity": 100, "transform": "none", "rotate": "0deg", "blur": 0, "brightness": 100, "flipX": false, "flipY": false, "visibility": "visible", "borderRadius": 0, "borderWidth": 0, "borderColor": "transparent", "boxShadow": { "color": "transparent", "x": 0, "y": 0, "blur": 0 } },
+      "animations": {},
+      "metadata": { "kind": "floating_stats", "bgColor": "#0A0B0A", "accent": "#FFD400", "stat1": { "value": "9000", "glyph": "eye", "appearSec": 0.1 }, "stat2": { "value": "2200", "glyph": "eye", "appearSec": 0.3 }, "stat3": { "value": "4500", "glyph": "eye", "appearSec": 0.5 }, "stat4": { "value": "6700", "glyph": "eye", "appearSec": 0.7 }, "stat5": { "value": "11.5K", "glyph": "eye", "appearSec": 0.9 } }
+    },
+    "c": {
+      "id": "c", "name": "Doodle", "type": "motionScene",
+      "display": { "from": 8000, "to": 12000 }, "duration": 4000,
+      "details": { "width": 1080, "height": 1920, "top": 0, "left": 0, "opacity": 100, "transform": "none", "rotate": "0deg", "blur": 0, "brightness": 100, "flipX": false, "flipY": false, "visibility": "visible", "borderRadius": 0, "borderWidth": 0, "borderColor": "transparent", "boxShadow": { "color": "transparent", "x": 0, "y": 0, "blur": 0 } },
+      "animations": {},
+      "metadata": { "kind": "doodle_scribble", "variant": "circle", "x": 0.5, "y": 0.4, "scale": 1.5, "drawSec": 1.2, "color": "#FFD400" }
+    }
+  }
+}
