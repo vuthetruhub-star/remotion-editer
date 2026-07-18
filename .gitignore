@@ -11,6 +11,11 @@
 # Screenshots / preview images
 *.png
 
+# Large source/render videos (machine-specific, don't commit)
+/public/*.mp4
+/samples/*.mp4
+/samples/*.webm
+
 # dependencies
 /node_modules
 /.pnp

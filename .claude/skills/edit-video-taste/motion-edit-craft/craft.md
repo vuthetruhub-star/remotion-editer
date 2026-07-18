@@ -12,12 +12,23 @@ nhưng vẫn theo đúng pattern, brand, và triết lý reference-first của r
 Nguồn gốc: chắt lọc từ một pipeline edit video YouTube thực chiến (~50 template overlay, hàng chục luật
 biên tập đúc kết từ feedback thật), đã **dịch sang brand `#00FF41`/Geist + pattern beat-based** của repo này.
 
+> **VAI TRÒ KHI SẢN XUẤT (sau khi đã học gu):** đây là **BỘ NÃO CHÍNH**. ⚠️ Đầu vào là **video thô đã cắt +
+> text (lời) của video đó — do bạn cấp**; bộ não **KHÔNG viết nội dung/kịch bản nói**. Việc của nó: (1) **KỊCH
+> BẢN DỰNG** — align text↔video rồi quyết đoạn nào đắp overlay/kind gì; (2) **khớp code phù hợp** (ghi
+> `design.json` / chọn module kind) đắp CHỒNG lên footage có sẵn — tất cả **theo GU đã học** ở
+> `../edit-taste/knowledge/taste-profile.md`. Thứ tự khi dựng thật: **đọc taste-profile (gu: nhịp, thông số,
+> playbook tình huống→treatment) → rồi mới áp craft bên dưới để thi công.** Craft quyết "dựng bằng gì / code
+> sao"; taste-profile quyết "canh số bao nhiêu cho giống gu mình".
+
 ---
 
 ## 0. Đọc gì trước (bắt buộc, theo thứ tự)
 
 Trước khi làm bất cứ scene/motion nào:
 
+0. **[../edit-taste/knowledge/taste-profile.md](../edit-taste/knowledge/taste-profile.md)** — 🎯 GU đã học
+   (nhịp, thông số ưa dùng, Bảng tình huống→treatment). **ĐỌC ĐẦU TIÊN khi làm video thật** — nó lái mọi
+   lựa chọn kịch bản/thông số bên dưới. (Đang trống `[CHỜ HỌC]` = chưa học video nào → dùng mặc định craft.)
 1. `CLAUDE.md` (repo) — luật ưu tiên & kiến trúc repo
 2. `src/brand.ts` — colors / fonts / spacing / radii / motion tokens (NGUỒN của mọi giá trị visual)
 3. `src/brand-docs/D1A-motion.md` — pattern kỹ thuật beat-based + easing

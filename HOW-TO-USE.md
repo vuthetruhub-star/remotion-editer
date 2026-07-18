@@ -1,6 +1,6 @@
 # HƯỚNG DẪN SỬ DỤNG — từ script + video → video Short hoàn chỉnh
 
-> Repo này là **editor motion-graphic (9:16)** + một **skill AI** (`.claude/skills/motion-edit-craft`) biết
+> Repo này là **editor motion-graphic (9:16)** + một **skill AI** (`.claude/skills/edit-video-taste/motion-edit-craft`) biết
 > tự lên kịch bản motion và ráp thành bản dựng. Có 2 cách dùng: **để AI làm hộ** (chính) hoặc **tự dựng tay
 > trong editor**. File này hướng dẫn cả hai.
 >
@@ -21,7 +21,7 @@ Script (text) + Video 1–2p (đã cắt CapCut)
 ```
 - **design.json** = một file JSON mô tả cả timeline: video nguồn + các "beat" motion (49 loại) + caption + SFX.
 - **kind** = loại đồ hoạ hiện trên màn (số lớn, timeline, biểu đồ, quote, logo…). Có 49 loại — xem
-  `.claude/skills/motion-edit-craft/knowledge/scene-catalog.md`.
+  `.claude/skills/edit-video-taste/motion-edit-craft/knowledge/scene-catalog.md`.
 
 ---
 
@@ -34,8 +34,8 @@ Nói với Claude, ví dụ:
 > "Dựng Short từ video này: `D:\videos\ep12.mp4`, script ở `D:\videos\ep12.txt`. Lên kịch bản motion giúp tôi."
 
 Claude sẽ tự chạy (skill `motion-edit-craft` kích hoạt):
-1. **Trích frame** để "thấy" nội dung màn hình — `python .claude/skills/motion-edit-craft/assets/extract_frames.py <video> <thư_mục_out>`
-2. **Transcript** offline — `python .claude/skills/motion-edit-craft/assets/transcribe.py <video>` → `words.json` (mốc từng từ)
+1. **Trích frame** để "thấy" nội dung màn hình — `python .claude/skills/edit-video-taste/motion-edit-craft/assets/extract_frames.py <video> <thư_mục_out>`
+2. **Transcript** offline — `python .claude/skills/edit-video-taste/motion-edit-craft/assets/transcribe.py <video>` → `words.json` (mốc từng từ)
 3. **Align script ↔ transcript** → biết mỗi câu ở giây nào
 4. **Lên beat plan**: mỗi đoạn nội dung → chọn kind phù hợp (số → `stat_punch`, liệt kê → `vertical_timeline`, so sánh → `comparison_grid`…), canh timing, zoom nhấn, SFX
 5. **Ghi `design.json`**
@@ -85,7 +85,7 @@ Mở **http://localhost:3000/edit**.
 | Chat/tin nhắn | `chat_message` |
 | Dashboard/metrics | `dashboard_card` |
 
-Chi tiết từng kind + khi nào dùng: `.claude/skills/motion-edit-craft/knowledge/scene-catalog.md`.
+Chi tiết từng kind + khi nào dùng: `.claude/skills/edit-video-taste/motion-edit-craft/knowledge/scene-catalog.md`.
 Field metadata chính xác của mỗi kind: mở `src/features/editor/player/items/motion-scenes/<kind>.tsx`, xem `defaultMeta`.
 
 ---
@@ -94,8 +94,8 @@ Field metadata chính xác của mỗi kind: mở `src/features/editor/player/it
 
 Bỏ file vào `public/` rồi tham chiếu bằng đường dẫn tương đối (vd `logos/stripe.png`).
 
-- **Logo brand:** `python .claude/skills/motion-edit-craft/assets/fetch_logo.py --out public/logos "Stripe" "Notion"`
-- **Ảnh/video stock:** `python .claude/skills/motion-edit-craft/assets/fetch_stock.py "person at desk" public/stock` (cần `PEXELS_API_KEY` free trong `.env`)
+- **Logo brand:** `python .claude/skills/edit-video-taste/motion-edit-craft/assets/fetch_logo.py --out public/logos "Stripe" "Notion"`
+- **Ảnh/video stock:** `python .claude/skills/edit-video-taste/motion-edit-craft/assets/fetch_stock.py "person at desk" public/stock` (cần `PEXELS_API_KEY` free trong `.env`)
 - **Lưu ý:** `.gitignore` chặn `*.png` → logo tải về sẽ không tự commit; muốn commit: `git add -f public/logos/x.png`.
 - **SFX/nhạc:** bỏ file `.wav`/`.mp3` vào `public/sfx/`, `public/music/` rồi thêm audio item trong design.json. (Skill chỉ có LUẬT dùng SFX, không kèm file — bản quyền.)
 - **Ảnh AI:** chỉ dùng cho khái niệm trừu tượng; theo style khoá trong `knowledge/image-style.md`.
@@ -125,8 +125,8 @@ node scripts/render-design.mjs my-design.json out.mp4 --scale 2      # 4K
 node scripts/render-design.mjs my-design.json ov.webm --transparent # overlay keyable
 
 # Transcript offline + trích frame (pha lên kịch bản)
-python .claude/skills/motion-edit-craft/assets/transcribe.py video.mp4
-python .claude/skills/motion-edit-craft/assets/extract_frames.py video.mp4 frames --fps 1
+python .claude/skills/edit-video-taste/motion-edit-craft/assets/transcribe.py video.mp4
+python .claude/skills/edit-video-taste/motion-edit-craft/assets/extract_frames.py video.mp4 frames --fps 1
 
 # Kiểm tra code (khi thêm kind)
 npx tsc --noEmit                                     # phải 0 lỗi
@@ -148,5 +148,5 @@ node src/scripts/test-motion-schema.mjs
 
 ---
 
-*Xem thêm:* skill tri thức biên tập/taste ở `.claude/skills/motion-edit-craft/` (SKILL.md + knowledge/) —
+*Xem thêm:* skill tri thức biên tập/taste ở `.claude/skills/edit-video-taste/motion-edit-craft/` (SKILL.md + knowledge/) —
 AI đọc để lên kịch bản có "gu". Bạn cũng đọc được để hiểu vì sao chọn kind này/kia.

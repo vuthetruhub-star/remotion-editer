@@ -51,11 +51,11 @@ Trước khi viết bất kỳ composition/element/control panel nào, đọc:
 - `src/brand-docs/EDITOR-integration.md` — **cách thêm motion asset mới** vào editor
 
 ## Biên tập & "taste" khi làm motion — đọc skill `motion-edit-craft`
-Repo có sẵn một Claude Code skill tại `.claude/skills/motion-edit-craft/` (tự nạp khi mở repo bằng
+Repo có sẵn một Claude Code skill tại `.claude/skills/edit-video-taste/motion-edit-craft/` (tự nạp khi mở repo bằng
 Claude Code). Đây là NGUỒN kiến thức biên tập/craft — dùng khi **quyết định làm gì** (chọn visual cho
 một beat nội dung, timing khớp voiceover, hook, mật độ, caption cadence, SFX), song song với các file
 kỹ thuật ở trên (quyết định **làm thế nào**).
-- `.claude/skills/motion-edit-craft/SKILL.md` — triết lý 2 trục (reference quyết "trông thế nào";
+- `.claude/skills/edit-video-taste/motion-edit-craft/SKILL.md` — triết lý 2 trục (reference quyết "trông thế nào";
   skill dẫn "cách thể hiện") + quy trình 7 bước.
 - `knowledge/taste-rules.md` — visual phải DẠY chứ không lặp lời; hook; mật độ; thứ bậc nguồn asset.
 - `knowledge/scene-catalog.md` — 50 loại overlay → recipe map sang schema layer + TIMING của repo.
