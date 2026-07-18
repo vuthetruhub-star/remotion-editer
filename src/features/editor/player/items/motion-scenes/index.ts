@@ -55,6 +55,7 @@ import { openLoopStackModule } from "./open-loop-stack";
 import { antithesisSplitModule } from "./antithesis-split";
 import { floatingStatsModule } from "./floating-stats";
 import { doodleScribbleModule } from "./doodle-scribble";
+import { captionWordModule } from "./caption-word";
 
 export type { MotionSceneModule } from "./types";
 
@@ -113,6 +114,7 @@ export const MOTION_SCENE_COMPONENTS: Record<string, MotionSceneModule> = {
   antithesis_split:   antithesisSplitModule,
   floating_stats:     floatingStatsModule,
   doodle_scribble:    doodleScribbleModule,
+  caption_word:       captionWordModule,
 };
 
 export const MOTION_SCENE_KINDS = Object.keys(MOTION_SCENE_COMPONENTS);

@@ -20,18 +20,21 @@ const require = createRequire(import.meta.url);
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const projectRoot = join(__dirname, "..", "..");
 
-const [,, inputBase64, outputPath, scaleArg, transparentArg] = process.argv;
+const [,, inputArg, outputPath, scaleArg, transparentArg] = process.argv;
 const renderScale = scaleArg ? parseFloat(scaleArg) : 1;
 const isTransparent = transparentArg === "1";
 
-if (!inputBase64 || !outputPath) {
+if (!inputArg || !outputPath) {
   process.stdout.write("ERROR:Missing arguments\n");
   process.exit(1);
 }
 
+// inputArg = "@<file>" (đọc JSON từ file — tránh ENAMETOOLONG cho design lớn) hoặc base64 (tương thích cũ).
 let inputProps;
 try {
-  inputProps = JSON.parse(Buffer.from(inputBase64, "base64").toString("utf8"));
+  inputProps = inputArg.startsWith("@")
+    ? JSON.parse(fs.readFileSync(inputArg.slice(1), "utf8"))
+    : JSON.parse(Buffer.from(inputArg, "base64").toString("utf8"));
 } catch (e) {
   process.stdout.write(`ERROR:Invalid input JSON: ${e.message}\n`);
   process.exit(1);

@@ -9,6 +9,7 @@
 // (solid color bg), and writes the output. Mirrors src/app/api/render-local/route.ts.
 import { spawn } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -51,16 +52,19 @@ const output = positional[1]
   : path.resolve(`${designPath.replace(/\.json$/i, "")}.${ext}`);
 
 const inputProps = { trackItemIds, trackItemsMap, transitionsMap, fps, size, background, duration };
-const inputBase64 = Buffer.from(JSON.stringify(inputProps)).toString("base64");
+// Ghi props ra FILE tạm rồi truyền "@<file>" (tránh ENAMETOOLONG khi design nhiều item).
+const tmpProps = path.join(os.tmpdir(), `d1a-props-${Date.now()}.json`);
+fs.writeFileSync(tmpProps, JSON.stringify(inputProps));
 const scriptPath = path.join(repoRoot, "src/scripts/remotion-render.mjs");
 
 console.log(`[render-design] ${designPath} -> ${output}  (${(duration / 1000).toFixed(1)}s, ${ext}, scale ${scaleArg})`);
 
 const child = spawn(
   process.execPath,
-  [scriptPath, inputBase64, output, String(scaleArg), transparent ? "1" : "0"],
+  [scriptPath, "@" + tmpProps, output, String(scaleArg), transparent ? "1" : "0"],
   { cwd: repoRoot, env: { ...process.env, FORCE_COLOR: "0" }, stdio: ["ignore", "pipe", "inherit"] },
 );
+const cleanup = () => { try { fs.unlinkSync(tmpProps); } catch {} };
 
 let lastLine = "";
 child.stdout.on("data", (chunk) => {
@@ -71,6 +75,7 @@ child.stdout.on("data", (chunk) => {
   }
 });
 child.on("close", (code) => {
+  cleanup();
   if (lastLine.startsWith("DONE:")) {
     console.log(`\n[render-design] OK -> ${lastLine.slice(5)}`);
     process.exit(0);
@@ -78,4 +83,4 @@ child.on("close", (code) => {
   console.error(`\n[render-design] FAILED (code ${code}). Last: ${lastLine}`);
   process.exit(code || 1);
 });
-child.on("error", (e) => { console.error(e); process.exit(1); });
+child.on("error", (e) => { cleanup(); console.error(e); process.exit(1); });
