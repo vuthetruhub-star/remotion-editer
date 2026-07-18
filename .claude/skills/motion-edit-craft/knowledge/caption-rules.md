@@ -66,6 +66,37 @@ beat**, không phải lớp phủ lên chúng.
 - Ngược lại, **brand name** thì theo script/nguồn thật (Whisper hay nghe nhầm tên riêng) — sửa tên riêng theo
   sự thật, còn từ thường theo audio.
 
+## 8. GU CAPTION ĐÃ HỌC (reference — cập nhật mỗi video mới)
+
+> Đây là **dữ liệu học được**, không phải luật cứng. Rút từ 6 reel cùng 1 creator (2026-07). Khi học video
+> mới, đo lại các trường dưới đây và merge (giữ khoảng min–max nếu lệch). Gu tổng gọn nằm ở
+> `edit-taste/knowledge/taste-profile.md §4`.
+
+**Base (creator reference):**
+| Trường | Giá trị đo | Ghi chú |
+|---|---|---|
+| Kiểu | word-by-word (từng từ) | 1 từ mỗi **0.2–0.45s** (đo transcript) |
+| Vị trí | **GIỮA màn, y ~57–60%** | ⚠️ KHÁC mặc định repo (đáy 0.11) — đây là biến thể taste "center caption" |
+| Cỡ / weight | 46–52px @1080, 600–700 | |
+| Màu | trắng `#FFFFFF` | viền tối 1px (chroma-safe, thay vì shadow blur) |
+| Card | không (cardless) | |
+
+**Cách NHẤN của creator này = CÁCH A (overlay riêng), KHÔNG restyle inline:**
+- Từ/câu quan trọng (số, tên riêng, keyword, câu chốt) → **bắn overlay chữ lớn riêng** (`word_pop` /
+  `kinetic_statement` / chữ tiêu đề vàng lớn) HOẶC graphic chuyên (`floating_stats`, `portrait_burst`,
+  `structure_scaffold` label). Dòng caption **giữ nguyên trắng đồng nhất** bên dưới.
+- ⇒ Với gu này, "nhấn caption" thực chất là chọn đúng overlay (đã có kind), KHÔNG cần đổi font trong dòng.
+- Cách B (nhấn INLINE per-word: 1 từ trong dòng to/đổi màu) — creator này KHÔNG dùng; repo cũng chưa hỗ trợ
+  keyword-emphasis (chỉ có active-word theo trạng thái). Cần thì mở rộng renderer sau.
+
+**CHECKLIST học caption mỗi video (đo rồi ghi vào đây + taste-profile §4):**
+- [ ] Vị trí (đáy/giữa? y bao nhiêu %) · cỡ · màu · cardless hay có nền.
+- [ ] Cadence: từng-từ hay cụm? mấy từ/dòng? ~bao nhiêu giây/từ.
+- [ ] Từ đang nói (active) có đổi màu/scale không? màu gì.
+- [ ] **Từ quan trọng** (số/tên/keyword) nhấn bằng: (A) overlay riêng / (B) inline đổi font-màu-cỡ / (C) không nhấn.
+- [ ] **Câu nhấn** có chuyển thành chữ lớn full không?
+- [ ] Emphasis dày hay thưa (bao nhiêu/10s).
+
 ## 7. Self-check caption
 
 - [ ] Short: ≤3 từ/dòng, cardless, current-word = accent `#00FF41`.
